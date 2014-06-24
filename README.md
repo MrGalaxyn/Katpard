@@ -1,33 +1,26 @@
-#katpard web page monitor
+katpard web page monitor
 ===========
 
-#prepare
+## Requirements
 
-Node.js
-Download and Install Node.js
+* [NodeJS](http://nodejs.org)
+* [MongoDB](http://www.mongodb.org/)
 
-MongoDB
-Download and Install MongoDB - Make sure you have a database for katpard
+## Installation
 
-NPM
-Node.js package manager, should already be installed as part of Node.js
-===========
+> At first, you need to do some configuration, tell us your nodejs path and a mongodb address(include username and password)
 
-#install
-
-## Linux
-
-### do some prepare work, you need to tell us where your node path and a mongodb address(include username and password), that is important!
+```
 cd katpard
 sh build.sh
-### install the dependencies
+# install the dependencies
 npm install
-### start the server
+# start the server
 ./restart.sh
-### add monitor data service to crond
+# add monitor data service to crond
 cat cron >> /etc/crontab
+```
 
-
-#LICENCE
+##LICENCE
 MIT
 
