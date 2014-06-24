@@ -1,4 +1,4 @@
-katpard web page monitor
+Katpard
 ===========
 
 ## Requirements
