@@ -1,0 +1,7 @@
+########定时(1分钟?)监控服务器进程,如果死了就重启################
+*/1 * * * * /bin/sh /data1/pageMonitor/node/cron/check_daemon/cron.sh > /dev/null 2>&1
+########定时(10分钟?)监控服务进程,用于获取最新的数据#############
+*/10 * * * * root /usr/local/bin/node /data1/pageMonitor/node/cron/monitor/ria_monitor.js time >> /data1/pageMonitor/log/monitor.log 2>&1
+13 3 * * * root /usr/local/bin/node /data1/pageMonitor/node/cron/monitor/ria_monitor.js >> /data1/pageMonitor/log/monitor.log 2>&1
+###################磁盘清理######################################
+10 3 * * * root /bin/sh /data1/pageMonitor/node/cron/disk_clean/clean.sh >/dev/null 2>&1

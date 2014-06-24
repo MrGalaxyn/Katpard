@@ -1,0 +1,240 @@
+
+            <noscript>
+                <div class="alert alert-block span10">
+                    <h4 class="alert-heading">Warning!</h4>
+                    <p>You need to have <a href="http://en.wikipedia.org/wiki/JavaScript" target="_blank">JavaScript</a> enabled to use this site.</p>
+                </div>
+            </noscript>
+            <link rel="stylesheet" href="css/harViewer.css" type="text/css"/>
+            <div id="content" class="span10">
+            <!-- content starts -->
+            
+
+            <div>
+                <ul class="breadcrumb">
+                    <li>
+                        <a href="/">Home</a> <span class="divider">/</span>
+                    </li>
+                    <li>
+                        <a href="#/ria">基调系统数据</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="row-fluid">
+                <div>
+                  <select ng-change="changeMode()" ng-options="m.name for m in models" ng-model="model"><option value="">-- 请选择 --</option></select>
+                  <select ng-show="model.type==1" ng-change="changeStat()" ng-options="s.name for s in stats" ng-model="stat"><option value="">-- 请选择 --</option></select>
+                  <select ng-show="model.type==2" ng-change="changeUrl()" ng-options="u.name for u in urls" ng-model="pageUrl"><option value="">-- 请选择 --</option></select>
+                  <select ng-show="model.type==2" ng-change="changeType()" ng-options="t.name for t in types" ng-model="pageType"><option value="">-- 请选择 --</option></select>
+                </div>
+            </div>
+            <div id="summary" ng-show="model.type==1">
+                <div class="row-fluid sortable">    
+                    <div class="box span12">
+                      <div class="box-header well" data-original-title>
+                        <h2><i class="icon-user"></i> 数据统计</h2>
+                        <div class="box-icon">
+                          <a href="javascript:void(0);" class="btn btn-minimize btn-round"><i class="icon-chevron-up"></i></a>
+                          <a href="javascript:void(0);" class="btn btn-close btn-round"><i class="icon-remove"></i></a>
+                        </div>
+                      </div>
+                      <div class="box-content">
+                        <table class="table table-bordered">
+                          <thead>
+                            <tr>
+                              <th class="center">页面</th>
+                              <th colspan="2" class="center">首包时间(ms)</th>
+                              <th colspan="2" class="center">首屏时间(ms)</th>
+                              <th colspan="2" class="center">DOMReady(ms)</th>
+                              <th colspan="2" class="center">WindowOnLoad(ms)</th>
+                              <th colspan="2" class="center">总下载时间(ms)</th>
+                            </tr>
+                          </thead>   
+                          <tbody>
+                            <tr ng-repeat="sum in sums">
+                                <td><a href="javascript:;" ng-click="getDetail(sum.url)">{{sum.name}}</a></td>
+                                <td class="center">{{sum.timeToFirstResFirstByte}}</td><td class="center"><span ng-if="sum.timeToFirstResFirstByter>0" style="color:red">{{sum.timeToFirstResFirstByter}}%</span><span ng-if="sum.timeToFirstResFirstByter<0" style="color:green">{{sum.timeToFirstResFirstByter}}%</span><span ng-if="sum.timeToFirstResFirstByter==0" style="color:green">{{sum.timeToFirstResFirstByter}}%</span></td>
+                                <td class="center">{{sum.timeTofirstScreenFinished}}</td><td class="center"><span ng-if="sum.timeTofirstScreenFinishedr>0" style="color:red">{{sum.timeTofirstScreenFinishedr}}%</span><span ng-if="sum.timeTofirstScreenFinishedr<0" style="color:green">{{sum.timeTofirstScreenFinishedr}}%</span><span ng-if="sum.timeTofirstScreenFinishedr==0" style="color:green">{{sum.timeTofirstScreenFinishedr}}%</span></td>
+                                <td class="center">{{sum.onDOMReadyTime}}</td><td class="center"><span ng-if="sum.onDOMReadyTimer>0" style="color:red">{{sum.onDOMReadyTimer}}%</span><span ng-if="sum.onDOMReadyTimer<0" style="color:green">{{sum.onDOMReadyTimer}}%</span><span ng-if="sum.onDOMReadyTimer==0" style="color:green">{{sum.onDOMReadyTimer}}%</span></td>
+                                <td class="center">{{sum.windowOnLoadTime}}</td><td class="center"><span ng-if="sum.windowOnLoadTimer>0" style="color:red">{{sum.windowOnLoadTimer}}%</span><span ng-if="sum.windowOnLoadTimer<0" style="color:green">{{sum.windowOnLoadTimer}}%</span><span ng-if="sum.windowOnLoadTimer==0" style="color:green">{{sum.windowOnLoadTimer}}%</span></td>
+                                <td class="center">{{sum.httpTrafficCompleted}}</td><td class="center"><span ng-if="sum.httpTrafficCompletedr>0" style="color:red">{{sum.httpTrafficCompletedr}}%</span><span ng-if="sum.httpTrafficCompletedr<0" style="color:green">{{sum.httpTrafficCompletedr}}%</span><span ng-if="sum.httpTrafficCompletedr==0" style="color:green">{{sum.httpTrafficCompletedr}}%</span></td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div><!--/span-->
+                </div>
+            </div>
+            <div id="chart" ng-show="model.type==2">
+                <div class="row-fluid sortable" id="harViewer" style="display:none;">
+                    <div class="box span12">
+                        <div class="box-header well">
+                            <h2><i class="icon-list-alt"></i> 瀑布图</h2>
+                            <div class="box-icon">
+                                <a href="javascript:void(0);" class="btn btn-minimize btn-round"><i class="icon-chevron-up"></i></a>
+                                <a href="javascript:void(0);" class="btn btn-close btn-round"><i class="icon-remove"></i></a>
+                            </div>
+                        </div>
+                        <div class="box-content">
+                            <div id="waterfall"></div>
+                        </div>
+                        <div class="box-header well" style="display:none;">
+                            <h2><i class="icon-list-alt"></i> 统计图</h2>
+                            <div class="box-icon">
+                                <a href="javascript:void(0);" class="btn btn-minimize btn-round"><i class="icon-chevron-up"></i></a>
+                                <a href="javascript:void(0);" class="btn btn-close btn-round"><i class="icon-remove"></i></a>
+                            </div>
+                        </div>
+                        <div class="box-content" style="display:none;">
+                            <div id="stats"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row-fluid sortable">
+                    <div class="box span6">
+                        <div class="box-header well" data-original-title>
+                            <h2><i class="icon-edit"></i></h2>
+                            <div class="box-icon">
+                                <a href="javascript:void(0);" class="btn btn-minimize btn-round"><i class="icon-chevron-up"></i></a>
+                                <a href="javascript:void(0);" class="btn btn-close btn-round"><i class="icon-remove"></i></a>
+                            </div>
+                        </div>
+                        <div class="box-content">
+                            <div id="chart0" style="height:300px; display:block;"></div>
+                        </div>
+                    </div><!--/span-->
+                    <div class="box span6">
+                        <div class="box-header well" data-original-title>
+                            <h2><i class="icon-edit"></i></h2>
+                            <div class="box-icon">
+                                <a href="javascript:void(0);" class="btn btn-minimize btn-round"><i class="icon-chevron-up"></i></a>
+                                <a href="javascript:void(0);" class="btn btn-close btn-round"><i class="icon-remove"></i></a>
+                            </div>
+                        </div>
+                        <div class="box-content">
+                            <div id="chart1" style="height:300px; display:block;"></div>
+                        </div>
+                    </div><!--/span-->
+                </div><!--/row-->
+                <div class="row-fluid sortable">
+                    <div class="box span6">
+                        <div class="box-header well" data-original-title>
+                            <h2><i class="icon-edit"></i></h2>
+                            <div class="box-icon">
+                                <a href="javascript:void(0);" class="btn btn-minimize btn-round"><i class="icon-chevron-up"></i></a>
+                                <a href="javascript:void(0);" class="btn btn-close btn-round"><i class="icon-remove"></i></a>
+                            </div>
+                        </div>
+                        <div class="box-content">
+                            <div id="chart2" style="height:300px; display:block;"></div>
+                        </div>
+                    </div><!--/span-->
+                    <div class="box span6">
+                        <div class="box-header well" data-original-title>
+                            <h2><i class="icon-edit"></i></h2>
+                            <div class="box-icon">
+                                <a href="javascript:void(0);" class="btn btn-minimize btn-round"><i class="icon-chevron-up"></i></a>
+                                <a href="javascript:void(0);" class="btn btn-close btn-round"><i class="icon-remove"></i></a>
+                            </div>
+                        </div>
+                        <div class="box-content">
+                            <div id="chart3" style="height:300px; display:block;"></div>
+                        </div>
+                    </div><!--/span-->
+                </div><!--/row-->
+                <div class="row-fluid sortable">
+                    <div class="box span6">
+                        <div class="box-header well" data-original-title>
+                            <h2><i class="icon-edit"></i></h2>
+                            <div class="box-icon">
+                                <a href="javascript:void(0);" class="btn btn-minimize btn-round"><i class="icon-chevron-up"></i></a>
+                                <a href="javascript:void(0);" class="btn btn-close btn-round"><i class="icon-remove"></i></a>
+                            </div>
+                        </div>
+                        <div class="box-content">
+                            <div id="chart4" style="height:300px; display:block;"></div>
+                        </div>
+                    </div><!--/span-->
+                    <div class="box span6">
+                        <div class="box-header well" data-original-title>
+                            <h2><i class="icon-edit"></i></h2>
+                            <div class="box-icon">
+                                <a href="javascript:void(0);" class="btn btn-minimize btn-round"><i class="icon-chevron-up"></i></a>
+                                <a href="javascript:void(0);" class="btn btn-close btn-round"><i class="icon-remove"></i></a>
+                            </div>
+                        </div>
+                        <div class="box-content">
+                            <div id="chart5" style="height:300px; display:block;"></div>
+                        </div>
+                    </div><!--/span-->
+                </div><!--/row-->
+                <div class="row-fluid sortable">
+                    <div class="box span6">
+                        <div class="box-header well" data-original-title>
+                            <h2><i class="icon-edit"></i></h2>
+                            <div class="box-icon">
+                                <a href="javascript:void(0);" class="btn btn-minimize btn-round"><i class="icon-chevron-up"></i></a>
+                                <a href="javascript:void(0);" class="btn btn-close btn-round"><i class="icon-remove"></i></a>
+                            </div>
+                        </div>
+                        <div class="box-content">
+                            <div id="chart6" style="height:300px; display:block;"></div>
+                        </div>
+                    </div><!--/span-->
+                    <div class="box span6">
+                        <div class="box-header well" data-original-title>
+                            <h2><i class="icon-edit"></i></h2>
+                            <div class="box-icon">
+                                <a href="javascript:void(0);" class="btn btn-minimize btn-round"><i class="icon-chevron-up"></i></a>
+                                <a href="javascript:void(0);" class="btn btn-close btn-round"><i class="icon-remove"></i></a>
+                            </div>
+                        </div>
+                        <div class="box-content">
+                            <div id="chart7" style="height:300px; display:block;"></div>
+                        </div>
+                    </div><!--/span-->
+                </div><!--/row-->
+                <div class="row-fluid sortable">
+                    <div class="box span6">
+                        <div class="box-header well" data-original-title>
+                            <h2><i class="icon-edit"></i></h2>
+                            <div class="box-icon">
+                                <a href="javascript:void(0);" class="btn btn-minimize btn-round"><i class="icon-chevron-up"></i></a>
+                                <a href="javascript:void(0);" class="btn btn-close btn-round"><i class="icon-remove"></i></a>
+                            </div>
+                        </div>
+                        <div class="box-content">
+                            <div id="chart8" style="height:300px; display:block;"></div>
+                        </div>
+                    </div><!--/span-->
+                    <div class="box span6">
+                        <div class="box-header well" data-original-title>
+                            <h2><i class="icon-edit"></i></h2>
+                            <div class="box-icon">
+                                <a href="javascript:void(0);" class="btn btn-minimize btn-round"><i class="icon-chevron-up"></i></a>
+                                <a href="javascript:void(0);" class="btn btn-close btn-round"><i class="icon-remove"></i></a>
+                            </div>
+                        </div>
+                        <div class="box-content">
+                            <div id="chart9" style="height:300px; display:block;"></div>
+                        </div>
+                    </div><!--/span-->
+                </div><!--/row-->
+            </div>
+                    <!-- content ends -->
+            </div><!--/javascript:void(0);content.span10-->
+
+        <div class="modal hide fade" id="myModal">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">×</button>
+                <h3>Settings</h3>
+            </div>
+            <div class="modal-body">
+                <p>Here settings can be configured...</p>
+            </div>
+            <div class="modal-footer">
+                <a href="javascript:void(0);" class="btn" data-dismiss="modal">Close</a>
+                <a href="javascript:void(0);" class="btn btn-primary">Save changes</a>
+            </div>
+        </div>

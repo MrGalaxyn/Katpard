@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>katpard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- The styles -->
+    <link id="bs-css" href="css/bootstrap-classic.css" rel="stylesheet" type="text/css" />
+    <style type="text/css">
+        body {
+            padding-bottom: 40px;
+        }
+        .sidebar-nav {
+            padding: 9px 0;
+        }
+        .maskLayer{
+            position:fixed;
+            top:0;
+            left:0;
+            height:100%;
+            width:100%;
+            z-index:20;
+            overflow: hidden; 
+            display:table;
+        }
+        .maskLayer .maskPicContainer{
+            width:100%;
+            height:100%;
+            text-align:center;
+            vertical-align:middle;
+            position:relative; margin: 10px;
+            *float:left;
+            display: table-cell;
+        }
+        .maskLayer .maskPicContainer .maskPicDiv{
+            *position:absolute;
+            top:50%;
+        }
+        .maskLayer .maskPicContainer .maskPicDiv .maskPic{
+            max-width:100px;
+            *position:relative;
+            top:-50%;
+            left:-50%;
+        }
+    </style>
+    <link href="css/bootstrap-responsive.css" rel="stylesheet" type="text/css" />
+    <link href="css/charisma-app.css" rel="stylesheet" type="text/css" />
+    <link href="css/jquery-ui-1.8.21.custom.css" rel="stylesheet" type="text/css" />
+    <link href='css/chosen.css' rel='stylesheet' type="text/css" />
+    <link href='css/uniform.default.css' rel='stylesheet' type="text/css" />
+    <link href='css/colorbox.css' rel='stylesheet' type="text/css" />
+    <link href='css/noty_theme_default.css' rel='stylesheet' type="text/css" />
+    <link href='css/elfinder.min.css' rel='stylesheet' type="text/css" />
+    <link href='css/elfinder.theme.css' rel='stylesheet' type="text/css" />
+    <link href='css/opa-icons.css' rel='stylesheet' type="text/css" />
+
+    <!-- The HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <!-- The fav icon -->
+    <link rel="shortcut icon" href="img/favicon.ico">
+</head>
+
+<body>
+    <!-- topbar starts -->
+    <div class="navbar">
+        <div class="navbar-inner">
+            <div class="container-fluid">
+                
+                
+                <!-- theme selector starts -->
+                <div class="btn-group pull-right theme-container" >
+                    <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+                        <i class="icon-tint"></i><span class="hidden-phone"> Change Theme / Skin</span>
+                        <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu" id="themes">
+                        <li><a data-value="classic" href="#"><i class="icon-blank"></i> Classic</a></li>
+                        <li><a data-value="cerulean" href="#"><i class="icon-blank"></i> Cerulean</a></li>
+                        <li><a data-value="cyborg" href="#"><i class="icon-blank"></i> Cyborg</a></li>
+                        <li><a data-value="redy" href="#"><i class="icon-blank"></i> Redy</a></li>
+                        <li><a data-value="journal" href="#"><i class="icon-blank"></i> Journal</a></li>
+                        <li><a data-value="simplex" href="#"><i class="icon-blank"></i> Simplex</a></li>
+                        <li><a data-value="slate" href="#"><i class="icon-blank"></i> Slate</a></li>
+                        <li><a data-value="spacelab" href="#"><i class="icon-blank"></i> Spacelab</a></li>
+                        <li><a data-value="united" href="#"><i class="icon-blank"></i> United</a></li>
+                    </ul>
+                </div>
+                <!-- theme selector ends -->
+                <img alt="Charisma Logo" src="img/Katpard20.png" style="float:left;"/>
+            </div>
+        </div>
+    </div>
+    <!-- topbar ends -->
+    <div class="container-fluid">
+        <div class="row-fluid">
+                
+            <!-- left menu starts -->
+            <div class="span2 main-menu-span">
+                <div class="well nav-collapse sidebar-nav">
+                    <ul class="nav nav-tabs nav-stacked main-menu">
+                        <li class="nav-header hidden-tablet">菜单</li>
+                        <li><a class="ajax-link" href="#/ria"><i class="icon-eye-open"></i><span class="hidden-tablet"> 监控数据</span></a></li>
+                        <li><a class="ajax-link" href="#/configure"><i class="icon-edit"></i><span class="hidden-tablet"> 配置</span></a></li>
+                    </ul>
+                    <!-- <label id="for-is-ajax" class="hidden-tablet" for="is-ajax"><input id="is-ajax" type="checkbox"> Ajax on menu</label> -->
+                </div><!--/.well -->
+            </div><!--/span-->
+            <!-- left menu ends -->
+            
+
+            <div ng-view></div>
+        </div><!--/fluid-row-->
+            <hr>
+
+        <footer>
+            <p class="pull-left">&copy; <a href="http://weiboria.sinaapp.com/" target="_blank">微博专业版RIA小分队</a> 2014</p>
+        </footer><!--/fluid-row-->
+    </div><!--/.fluid-container-->
+
+    <!-- external javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <!-- AngularJS -->
+    <script src="js/lib/angular/angular.min.js"></script>
+    <script src="js/lib/angular/angular-route.min.js"></script>
+    <!-- jQuery -->
+    <script src="js/lib/jquery/jquery-1.7.2.min.js"></script>
+    <!-- jQuery UI -->
+    <script src="js/lib/jquery/jquery-ui-1.8.21.custom.min.js"></script>
+    <!-- transition / effect library -->
+    <script src="js/lib/bootstrap/bootstrap-transition.js"></script>
+    <!-- alert enhancer library -->
+    <script src="js/lib/bootstrap/bootstrap-alert.js"></script>
+    <!-- modal / dialog library -->
+    <script src="js/lib/bootstrap/bootstrap-modal.js"></script>
+    <!-- custom dropdown library -->
+    <script src="js/lib/bootstrap/bootstrap-dropdown.js"></script>
+    <!-- scrolspy library -->
+    <script src="js/lib/bootstrap/bootstrap-scrollspy.js"></script>
+    <!-- library for creating tabs -->
+    <script src="js/lib/bootstrap/bootstrap-tab.js"></script>
+    <!-- library for advanced tooltip -->
+    <script src="js/lib/bootstrap/bootstrap-tooltip.js"></script>
+    <!-- popover effect library -->
+    <script src="js/lib/bootstrap/bootstrap-popover.js"></script>
+    <!-- button enhancer library -->
+    <script src="js/lib/bootstrap/bootstrap-button.js"></script>
+    <!-- accordion library (optional, not used in demo) -->
+    <script src="js/lib/bootstrap/bootstrap-collapse.js"></script>
+    <!-- tour library -->
+    <script src="js/lib/bootstrap/bootstrap-tour.js"></script>
+    <!-- library for cookie management -->
+    <script src="js/lib/jquery/jquery.cookie.js"></script>
+    <!-- data table plugin -->
+    <script src='js/lib/jquery/jquery.dataTables.min.js'></script>
+
+    <!-- select or dropdown enhancer -->
+    <script src="js/lib/jquery/jquery.chosen.min.js"></script>
+    <!-- checkbox, radio, and file input styler -->
+    <script src="js/lib/jquery/jquery.uniform.min.js"></script>>
+    <!-- requirejs-->
+    <script src="js/lib/requirejs/require.js" data-main="js/main.js"></script>
+</body>
+</html>
+
