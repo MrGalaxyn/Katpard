@@ -25,9 +25,9 @@ module.exports = function (app) {
         var reqData = {
             name: req.body.name,
             addr: req.body.addr,
-            user: req.body.user,
-            password: req.body.password,
-            ua: req.body.ua
+            user: req.body.user ? req.body.user : '',
+            password: req.body.password ? req.body.password : '',
+            ua: req.body.ua ? req.body.ua : ''
         };
 
         Url.create(reqData, function(error){
@@ -51,9 +51,9 @@ module.exports = function (app) {
         var reqData = {
             name: req.body.name,
             addr: req.body.addr,
-            user: req.body.user,
-            password: req.body.password,
-            ua: req.body.ua
+            user: req.body.user ? req.body.user : '',
+            password: req.body.password ? req.body.password : '',
+            ua: req.body.ua ? req.body.ua : ''
         };
         Url.update({_id: req.body.id}, reqData, function(error) {
             if(error) {
