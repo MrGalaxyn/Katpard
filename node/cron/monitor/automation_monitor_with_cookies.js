@@ -8,7 +8,7 @@ var casper = require("casper").create({
     }
 });
 if (casper.cli.args.length < 1) {
-    casper.echo("usage: casper automation_monitor_with_cookies.js <url> <type> <harPath>")
+    casper.echo("usage: casper automation_monitor_with_cookies.js <url> <type> <harPath> <ua>")
     phantom.exit(0);
 }
 var url = casper.cli.args[0];
@@ -16,6 +16,7 @@ var opt = {
     type: casper.cli.args[1],
     harPath: casper.cli.args[2],
 }
+var ua = casper.cli.args[3];
 
 casper.start();
 var monitor = require(casper.cli.options['casper-path'] + '/monitors/core');
@@ -25,6 +26,9 @@ casper.then(function() {
     monitor.startMonitor(opt);
 })
 casper.then(function() {
+    if (ua) {
+        this.userAgent(ua);
+    }
     this.open(url);
 });
 

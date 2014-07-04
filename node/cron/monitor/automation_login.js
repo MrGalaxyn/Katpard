@@ -11,7 +11,7 @@ var casper = require("casper").create({
 });
 
 if (casper.cli.args.length < 2) {
-    casper.echo("usage: casper scrap.js <username> <password>")
+    casper.echo("usage: casper automation_login.js <username> <password>")
     phantom.exit(0);
 }
 var usr = casper.cli.args[0];

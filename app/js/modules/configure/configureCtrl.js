@@ -53,7 +53,8 @@ define([
                 name: $scope.newUrlName,
                 user: $scope.newUrlUser,
                 password: $scope.newUrlPassword,
-                addr: $scope.newUrlAddr
+                addr: $scope.newUrlAddr,
+                ua: $scope.newUrlUA
             }).success(function(json, status, headers, config) {
                     if (json.code != 100000) {
                         alert('new addr error');
@@ -62,12 +63,14 @@ define([
                             name: $scope.newUrlName, 
                             user: $scope.newUrlUser, 
                             password: $scope.newUrlPassword, 
-                            addr: $scope.newUrlAddr
+                            addr: $scope.newUrlAddr,
+                            ua: $scope.newUrlUA
                         });
                         $scope.newUrlName = '';
                         $scope.newUrlAddr = '';
                         $scope.newUrlUser = '';
                         $scope.newUrlPassword = '';
+                        $scope.newUrlUA = '';
                     }
                 });
         };
@@ -77,6 +80,7 @@ define([
             $scope.urls[index].oEmail = $scope.urls[index].email;
             $scope.urls[index].oUser = $scope.urls[index].user;
             $scope.urls[index].oPassword = $scope.urls[index].password;
+            $scope.urls[index].oUA = $scope.urls[index].ua;
         };
         $scope.delUrl = function($event, index) {
             $http.post('/configure/delUrl', {
@@ -97,7 +101,8 @@ define([
                 name: $scope.urls[index].name,
                 addr: $scope.urls[index].addr,
                 user: $scope.urls[index].user,
-                password: $scope.urls[index].password
+                password: $scope.urls[index].password,
+                ua: $scope.urls[index].ua
             }).success(function(json, status, headers, config) {
                     if (json.code != 100000) {
                         alert('new addr error');
@@ -107,6 +112,7 @@ define([
                         $scope.urls[index].oEmail = '';
                         $scope.urls[index].oUser = '';
                         $scope.urls[index].oPassword = '';
+                        $scope.urls[index].oUA = '';
                     }
                 });
         };
@@ -116,6 +122,7 @@ define([
             $scope.urls[index].email = $scope.urls[index].oEmail;
             $scope.urls[index].user = $scope.urls[index].oUser;
             $scope.urls[index].password = $scope.urls[index].oPassword;
+            $scope.urls[index].ua = $scope.urls[index].oUA;
         };
     };
     app.register.controller('configureCtrl', ['$scope', '$http', configureCtrl]);

@@ -40,6 +40,7 @@
                   <th style="width:160px;">地址</th>
                   <th style="width:120px;">账号</th>
                   <th style="width:80px;">密码</th>
+                  <th style="width:80px;">UserAgent</th>
                   <th style="width:120px;">操作</th>
                 </tr>
               </thead>   
@@ -62,7 +63,12 @@
                 </td>
                 <td>
                   <div class="controls">
-                    <input class="span12" type="text" ng-model="newUrlPassword" >
+                    <input class="span12" type="text" ng-model="newUrlPassword">
+                  </div>
+                </td>
+                <td>
+                  <div class="controls">
+                    <input class="span12" type="text" ng-model="newUrlUA">
                   </div>
                 </td>
                 <td style="text-align:center;">
@@ -78,7 +84,7 @@
                   <input ng-model='url.name' ng-if="url.editFlag" class="span12" type="text" value={{url.name}} required>
                 </td>
                 <td class="center">
-                  <span ng-model='url.addr' ng-if="!url.editFlag" style="word-break:break-all;">{{url.addr}}</span>
+                  <span ng-model='url.addr' style="word-break:break-all;" ng-if="!url.editFlag">{{url.addr}}</span>
                   <input ng-model='url.addr' ng-if="url.editFlag" class="span12" type="url" value={{url.addr}} required>
                 </td>
                 <td>
@@ -88,6 +94,10 @@
                 <td class="center">
                   <span ng-model='url.password' ng-if="!url.editFlag">{{url.password}}</span>
                   <input ng-model='url.password' ng-if="url.editFlag" class="span12" type="text" value={{url.password}}>
+                </td>
+                <td class="center">
+                  <span ng-model='url.ua' style="word-break:break-all;" ng-if="!url.editFlag">{{url.ua}}</span>
+                  <input ng-model='url.ua' ng-if="url.editFlag" class="span12" type="url" value={{url.ua}} required>
                 </td>
                 <td style="text-align:center;">
                   <a class="btn btn-info btn-mini" ng-if="!url.editFlag" href="javascript:void(0);" ng-click='editUrl($event, $index)'>

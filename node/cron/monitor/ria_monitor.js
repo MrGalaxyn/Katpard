@@ -26,6 +26,10 @@ var url_schema = new mongoose.Schema({
     password: {
         type: String,
         trim: true
+    },
+    ua: {
+        type: String,
+        trim: true
     }
 });
 var Url = db.model('monitor_url', url_schema);
@@ -102,7 +106,7 @@ function get_monitor_data(type) {
         }, 60000);
         
         if (arg.length > 3) {
-            monitor_process.stdout.on('data', function (data) {
+            monitor_process.stdout.on('data', function(data) {
                 var tmp = JSON.parse(data);
                 tmp = tmp.metrics;
                 var file = arg[3];
@@ -119,7 +123,7 @@ function get_monitor_data(type) {
                 results.push(tmp);
             });
 
-            monitor_process.stderr.on('data', function (data) {
+            monitor_process.stderr.on('data', function(data) {
                 console.log("error: ", data.toString('utf8'));
                 monitor_process.kill();
                 clearTimeout(timer);
@@ -127,7 +131,7 @@ function get_monitor_data(type) {
             });
         }
             
-        monitor_process.on('exit', function () {
+        monitor_process.on('exit', function() {
             monitor_process.kill();
             clearTimeout(timer);
             get_data(args);
@@ -156,19 +160,28 @@ function get_monitor_data(type) {
                     args[urls[i].user]['data'].push(urls[i]);
                 }
                 else {
-                    args_no_login[urls[i].addr] = urls[i]._id;
+                    args_no_login[urls[i].addr] = urls[i]._id + ';;;' + urls[i].ua;
                 }
             }
             for (var usr in args) {
                 moni_args.push([__dirname + '/automation_login.js', usr, args[usr].pw]);
                 for (var i in args[usr]['data']) {
                     var fileDir = config.root + '/data1/pageMonitor/har/' + monitor_time.format("yyyy/MM/dd/hh/mm/");
-                    moni_args.push([__dirname + '/automation_monitor_with_cookies.js', args[usr]['data'][i].addr, type, fileDir + args[usr]['data'][i]._id]);
+                    var arg = [__dirname + '/automation_monitor_with_cookies.js', args[usr]['data'][i].addr, type, fileDir + args[usr]['data'][i]._id];
+                    if (args[usr]['data'][i].ua) {
+                        arg.push(args[usr]['data'][i].ua);
+                    }
+                    moni_args.push(arg);
                 }
             }
             for (var addr in args_no_login) {
+                var tmp = args_no_login[addr].split(';;;');
                 var fileDir = '/data1/pageMonitor/har/' + monitor_time.format("yyyy/MM/dd/hh/mm/");
-                moni_args.push([__dirname + '/automation_monitor_without_cookies.js', addr, type, fileDir + args_no_login[addr]]);
+                var arg = [__dirname + '/automation_monitor_without_cookies.js', addr, type, fileDir + tmp[0]];
+                if (tmp[1]) {
+                    arg.push(tmp[1]);
+                }
+                moni_args.push(arg);
             }
             
             get_data(moni_args);
@@ -181,7 +194,7 @@ var store_func = function(results, type) {
     var min_cnt = 0;
     var model = type === 'time' ? ria_timming : ria_others;
     for(var i in results) {
-        model.create(results[i], function(error){
+        model.create(results[i], function(error) {
             min_cnt++;
             if(error) {
                 console.log("store error: ", error);

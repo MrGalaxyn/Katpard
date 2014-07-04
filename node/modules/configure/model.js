@@ -30,6 +30,10 @@ module.exports = function (dbconn) {
         password: {
             type: String,
             trim: true
+        },
+        ua: {
+            type: String,
+            trim: true
         }
     });
 

@@ -15,13 +15,16 @@ var opt = {
     type: casper.cli.args[1],
     harPath: casper.cli.args[2],
 }
-
+var ua = casper.cli.args[3];
 casper.start();
 var monitor = require(casper.cli.options['casper-path'] + '/monitors/core');
 casper.then(function() {
     monitor.startMonitor(opt);
 })
 casper.then(function() {
+    if (ua) {
+        this.userAgent(ua);
+    }
     this.open(url);
 });
 
