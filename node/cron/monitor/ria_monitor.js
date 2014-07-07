@@ -160,7 +160,7 @@ function get_monitor_data(type) {
                     args[urls[i].user]['data'].push(urls[i]);
                 }
                 else {
-                    args_no_login[urls[i].addr] = urls[i].ua ? (urls[i]._id + ';;;' + urls[i].ua) : urls[i]._id;
+                    args_no_login[urls[i].addr] = urls[i].ua ? (urls[i]._id + ';;;' + urls[i].ua) : (urls[i]._id + '');
                 }
             }
             for (var usr in args) {
