@@ -19,45 +19,46 @@ module.exports = function (app) {
         var last = 0;
         var delta = 0;
 
-        for (var i = 0; i < data.length; i++) {
+        var i = 0;
+        var length = data.length;
+        var lstandard = standard + 3600000;
+        while (i < length) {
             // get one hour data, and then choose the median, but we have some 
             // fix, in case the data is not a normal data(because of the network),
             // our method is compare the delta value between this hour and last 
             // our, if this hour is less than 3 times of (last hour delta value) * 3,
             // we assume that is a normal data
-            if (data[i].monitor_time >= standard) {
+            if (data[i].monitor_time >= standard && data[i].monitor_time <= lstandard) {
                 if (data[i][type] && Number(data[i][type]) > 0) {
                     tmp.push(data[i][type]);
                 }
-            }
-            else {
-                if (tmp.length > 0) {
-                    var timestamp = standard;
-                    standard = timestamp - 3600000;
-
-                    tmp.sort(function(a,b) {return a < b ? 1 : -1});
-                    var index = parseInt(tmp.length / 2);
-                    var min = 0;
-                    for (var j = index; j >= 0 ;j--) {
-                        var tmpDelta = Math.abs(tmp[j] - last);
-                        if (tmpDelta < (delta + 100) * 3 || delta == 0) {
-                            delta = tmpDelta;
-                            last = tmp[j];
-                            min = last;
-                            break;
-                        }
+                i++;
+            } else if (tmp.length > 0) {
+                lstandard = standard;
+                standard = standard - 3600000;
+                tmp.sort(function(a,b) {return a < b ? 1 : -1});
+                var index = parseInt(tmp.length / 2);
+                var min = 0;
+                for (var j = index; j >= 0 ;j--) {
+                    var tmpDelta = Math.abs(tmp[j] - last);
+                    if (tmpDelta < (delta + 100) * 3 || delta == 0) {
+                        delta = tmpDelta;
+                        last = tmp[j];
+                        min = last;
+                        break;
                     }
-                    if (min !== 0) {
-                        res.push({
-                            x: timestamp,
-                            y: [min]
-                        });
-                    }
-                    tmp.length = 0;
                 }
-                if (data[i][type] && Number(data[i][type]) > 0) {
-                    tmp.push(data[i][type]);
+                if (min !== 0) {
+                    res.push({
+                        x: lstandard,
+                        y: [min]
+                    });
                 }
+                tmp.length = 0;
+                i++
+            } else {
+                lstandard = standard;
+                standard = standard - 3600000;
             }
         }
         if (tmp.length > 0) {
