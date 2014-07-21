@@ -194,8 +194,7 @@ define([
                             }
                         },
                         axisX: {  
-                                labelAngle: 150,   
-                                interval:1, 
+                                labelAngle: 150,
                                 intervalType: "day",
                                 valueFormatString: "M.D"
                         },
