@@ -21,7 +21,7 @@ cat cron >> /etc/crontab
 ```
 
 # 系统结构图
-![design](http://raw.github.com/MrGalaxyn/Katpard/master/app/img/design.jpg)
+![design](http://raw.github.com/MrGalaxyn/Katpard/master/app/img/design/design.jpg)
 
 # Features
 ###1. 自动登陆
@@ -40,7 +40,7 @@ Katpard系统中，你可以设置模拟某类终端的UA，从而获取比如�
        
 ###4. 丰富的数据
 ####Katpard提供的数据如下：
-* #####时间数据
+* ####时间数据
     * httpTrafficCompleted: 收到最后一个字节HTTP请求的时间(ms)
     * timeToFirstResFirstByte: 收到首次响应首个字节的时间(ms)
     * slowestResponse: 最长响应时间(ms)
@@ -51,7 +51,7 @@ Katpard系统中，你可以设置模拟某类终端的UA，从而获取比如�
     * timeTofirstScreenFinished: 首屏时间(ms)
     * timeToFirstCss: 接收首个css文件最后一个字节的时间(ms)
     * timeToFirstJs: 接收首个js文件最后一个字节的时间(ms)
-* #####DOM相关
+* ####DOM相关
     * DOMqueries: 全部DOM操作数
     * DOMqueriesById: document.getElementById调用次数
     * DOMqueriesByClassName: document.getElementsByClassName调用次数
@@ -62,13 +62,13 @@ Katpard系统中，你可以设置模拟某类终端的UA，从而获取比如�
     * DOMelementsCount: DOM节点数
     * DOMelementMaxDepth: 最大DOM节点层数
     * nodesWithInlineCSS: 带有style属性的DOM节点数
-* #####请求相关
+* ####请求相关
     * maxRequestsPerDomain: 单域下最多请求数
     * medianRequestsPerDomain: 各域请求中位数
     * requests: HTTP请求总数
     * notFound: 404的HTTP请求数
     * ajaxRequests: 页面AJAX请求数
-* #####文件内容相关
+* ####文件内容相关
     * htmlCount: HTML文件响应数
     * htmlSize: HTML响应总字节数
     * cssCount: CSS文件响应数
