@@ -1,4 +1,4 @@
-![katpard](https://raw.githubusercontent.com/Katpard/master/app/img/Katpard20.png)
+![katpard](http://ww2.sinaimg.cn/mw690/8fd2dbb4jw1eio4kpbe68j203k01ea9v.jpg)
 ===========
 # What is Katpard
 Katpard是一套前端页面性能检测系统，这套系统是为了帮助前端开发人员能够快速准确的了解页面性能状况
@@ -27,7 +27,7 @@ cat cron >> /etc/crontab
 ```
 
 # 系统结构图
-![design](https://raw.githubusercontent.com/Katpard/master/app/img/design/design.jpg)
+![design](http://ww3.sinaimg.cn/mw690/8fd2dbb4jw1eio4hzcaasj20go07hgmc.jpg)
 
 # Features
 ###1. 自动登陆
