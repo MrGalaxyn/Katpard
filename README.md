@@ -1,5 +1,11 @@
-![katpard](http://raw.github.com/MrGalaxyn/Katpard/master/app/img/Katpard20.png)
+![katpard](https://raw.githubusercontent.com/Katpard/master/app/img/Katpard20.png)
 ===========
+# What is Katpard
+Katpard是一套前端页面性能检测系统，这套系统是为了帮助前端开发人员能够快速准确的了解页面性能状况
+
+# 适用场景
+* 日常的性能预警
+* 页面性能对比
 
 # Requirements
 Katpard 依赖 [NodeJS](http://nodejs.org) 和 [MongoDB](http://www.mongodb.org/) 来存取数据，因此在使用本系统前请务必安装nodejs（推荐0.10.x+）以及mongoDB
@@ -21,7 +27,7 @@ cat cron >> /etc/crontab
 ```
 
 # 系统结构图
-![design](http://raw.github.com/MrGalaxyn/Katpard/master/app/img/design/design.jpg)
+![design](https://raw.githubusercontent.com/Katpard/master/app/img/design/design.jpg)
 
 # Features
 ###1. 自动登陆
@@ -40,7 +46,7 @@ Katpard系统中，你可以设置模拟某类终端的UA，从而获取比如�
        
 ###4. 丰富的数据
 ####Katpard提供的数据如下：
-* ####时间数据
+* **时间数据**
     * httpTrafficCompleted: 收到最后一个字节HTTP请求的时间(ms)
     * timeToFirstResFirstByte: 收到首次响应首个字节的时间(ms)
     * slowestResponse: 最长响应时间(ms)
@@ -51,7 +57,7 @@ Katpard系统中，你可以设置模拟某类终端的UA，从而获取比如�
     * timeTofirstScreenFinished: 首屏时间(ms)
     * timeToFirstCss: 接收首个css文件最后一个字节的时间(ms)
     * timeToFirstJs: 接收首个js文件最后一个字节的时间(ms)
-* ####DOM相关
+* **DOM相关**
     * DOMqueries: 全部DOM操作数
     * DOMqueriesById: document.getElementById调用次数
     * DOMqueriesByClassName: document.getElementsByClassName调用次数
@@ -62,13 +68,13 @@ Katpard系统中，你可以设置模拟某类终端的UA，从而获取比如�
     * DOMelementsCount: DOM节点数
     * DOMelementMaxDepth: 最大DOM节点层数
     * nodesWithInlineCSS: 带有style属性的DOM节点数
-* ####请求相关
+* **请求相关**
     * maxRequestsPerDomain: 单域下最多请求数
     * medianRequestsPerDomain: 各域请求中位数
     * requests: HTTP请求总数
     * notFound: 404的HTTP请求数
     * ajaxRequests: 页面AJAX请求数
-* ####文件内容相关
+* **文件内容相关**
     * htmlCount: HTML文件响应数
     * htmlSize: HTML响应总字节数
     * cssCount: CSS文件响应数
@@ -78,7 +84,7 @@ Katpard系统中，你可以设置模拟某类终端的UA，从而获取比如�
     * consoleMessages: console.*类函数调用数
     * imageCount: 图片文件响应数
     * imageSize: 图片响应总字节数
-* #####HAR文件相关
+* **HAR文件相关**
 
 #TO DO
 
