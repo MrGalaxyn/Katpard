@@ -121,7 +121,7 @@ module.exports = function (app) {
             }
         };
         var model = spec === 'timing' ? Timing : Other;
-        var query  = model.where(options).select(type + ' monitor_time').sort("-monitor_time");
+        var query  = model.where(options).select(type + ' monitor_time').sort("-monitor_time").lean();
         query.find(function (error, mData) {
             if(error || mData.length <= 0) {
                 res.json({
@@ -175,48 +175,51 @@ module.exports = function (app) {
     var calcAverage = function(summary_data) {
         var tmp = {};
         var res = {};
-
+        var index = '';
+        var timeToFirstResFirstByte = '';
+        var onDOMReadyTime = '';
+        var windowOnLoadTime = '';
+        var timeTofirstScreenFinished = '';
+        var httpTrafficCompleted = '';
         for (var i in summary_data) {
-            if (!tmp[summary_data[i].index]) {
-                tmp[summary_data[i].index] = [];
+            index = summary_data[i].index;
+            if (!res[index]) {
+                res[index] = {
+                    timeToFirstResFirstByte: 0,
+                    onDOMReadyTime: 0,
+                    windowOnLoadTime: 0,
+                    timeTofirstScreenFinished: 0,
+                    httpTrafficCompleted: 0,
+                    cnt: 0
+                };
             }
-            if ((summary_data[i].timeToFirstResFirstByte && (Number(summary_data[i].timeToFirstResFirstByte) < 0 || Number(summary_data[i].timeToFirstResFirstByte) > 200000)) ||
-                (summary_data[i].onDOMReadyTime && (Number(summary_data[i].onDOMReadyTime) < 0 || Number(summary_data[i].onDOMReadyTime) > 200000)) ||
-                (summary_data[i].windowOnLoadTime && (Number(summary_data[i].windowOnLoadTime) < 0 || Number(summary_data[i].windowOnLoadTime) > 200000)) ||
-                (summary_data[i].timeTofirstScreenFinished && (Number(summary_data[i].timeTofirstScreenFinished) < 0 || Number(summary_data[i].timeTofirstScreenFinished) > 200000)) ||
-                (summary_data[i].httpTrafficCompleted && (Number(summary_data[i].httpTrafficCompleted) < 0 || Number(summary_data[i].httpTrafficCompleted) > 200000))) {
+            timeToFirstResFirstByte = Number(summary_data[i].timeToFirstResFirstByte);
+            onDOMReadyTime = Number(summary_data[i].onDOMReadyTime);
+            windowOnLoadTime = Number(summary_data[i].windowOnLoadTime);
+            timeTofirstScreenFinished = Number(summary_data[i].timeTofirstScreenFinished);
+            httpTrafficCompleted = Number(summary_data[i].httpTrafficCompleted);
+            if (!(timeToFirstResFirstByte > 0 && timeToFirstResFirstByte < 200000 &&
+                onDOMReadyTime > 0 && onDOMReadyTime < 200000 &&
+                windowOnLoadTime > 0 && windowOnLoadTime < 200000 &&
+                timeTofirstScreenFinished > 0 && timeTofirstScreenFinished < 200000 &&
+                httpTrafficCompleted > 0 && httpTrafficCompleted < 200000)) {
                 continue;
             }
-            tmp[summary_data[i].index].push(summary_data[i]);
+            res[index].timeToFirstResFirstByte += timeToFirstResFirstByte;
+            res[index].onDOMReadyTime += onDOMReadyTime;
+            res[index].windowOnLoadTime += windowOnLoadTime;
+            res[index].httpTrafficCompleted += httpTrafficCompleted;
+            res[index].timeTofirstScreenFinished += timeTofirstScreenFinished;
+            res[index].cnt++;
         }
-        for (var index in tmp) {
-            var timeToFirstResFirstByte = 0;
-            var onDOMReadyTime = 0;
-            var windowOnLoadTime = 0;
-            var timeTofirstScreenFinished = 0;
-            var httpTrafficCompleted = 0;
-            
-            var i = 0;
-            var fixFs = 0;
-            for (; i < tmp[index].length; i++) {
-                timeToFirstResFirstByte += Number(tmp[index][i].timeToFirstResFirstByte);
-                onDOMReadyTime += Number(tmp[index][i].onDOMReadyTime);
-                windowOnLoadTime += Number(tmp[index][i].windowOnLoadTime);
-                httpTrafficCompleted += Number(tmp[index][i].httpTrafficCompleted);
-
-                if (tmp[index][i].timeTofirstScreenFinished) {
-                    timeTofirstScreenFinished += Number(tmp[index][i].timeTofirstScreenFinished);
-                    fixFs++;
-                }
-            }
-
+        for (var index in res) {
             res[index] = {
-                timeToFirstResFirstByte: (timeToFirstResFirstByte / i).toFixed(2),
-                onDOMReadyTime: (onDOMReadyTime / i).toFixed(2),
-                windowOnLoadTime: (windowOnLoadTime / i).toFixed(2),
-                timeTofirstScreenFinished: fixFs != 0 ? (timeTofirstScreenFinished / fixFs).toFixed(2) : 0,
-                httpTrafficCompleted: (httpTrafficCompleted / i).toFixed(2)
-            }
+                timeToFirstResFirstByte: (res[index].timeToFirstResFirstByte / res[index].cnt).toFixed(2),
+                onDOMReadyTime: (res[index].onDOMReadyTime / res[index].cnt).toFixed(2),
+                windowOnLoadTime: (res[index].windowOnLoadTime / res[index].cnt).toFixed(2),
+                timeTofirstScreenFinished: (res[index].timeTofirstScreenFinished / res[index].cnt).toFixed(2),
+                httpTrafficCompleted: (res[index].httpTrafficCompleted / res[index].cnt).toFixed(2)
+            };
         }
         return res;
     };
@@ -292,9 +295,9 @@ module.exports = function (app) {
         var type = req.query.type ? req.query.type : 'average';
         var query = Timing.where({
             monitor_time: {'$gte': time - 3600000 * 24 * cnt * 2, '$lte': time}
-        }).sort('-start_time');
-
-        query.find(function(error, eData) {
+        });
+        query = type === 'median' ? query.sort('-monitor_time') : query;
+        query.lean().find(function(error, eData) {
             if(error) {
                 res.json({
                     code : 100001,

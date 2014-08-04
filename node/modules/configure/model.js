@@ -23,6 +23,10 @@ module.exports = function (dbconn) {
             required: true,
             trim: true
         },
+        group: {
+            type: String,
+            trim: true
+        },
         user: {
             type: String,
             trim: true
