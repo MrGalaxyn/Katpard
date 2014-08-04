@@ -64,13 +64,14 @@ function process_monitor_data(from, to, urls, cur_flag) {
             '$in': urls
         }
     };
-    var query  = ria_timing.where(options).select('timeToFirstResFirstByte httpTrafficCompleted timeTofirstScreenFinished index monitor_time').sort("-monitor_time");
+    var query  = ria_timing.where(options).select('timeToFirstResFirstByte httpTrafficCompleted timeTofirstScreenFinished index monitor_time').sort("-monitor_time").lean();
     query.find(function (error, mData) {
         if(error) {
             console.log(error);
             return;
         } else {
             if (mData.length == 0) {
+                proc_cnt++;
                 return;
             }
             var data = cur_flag ? res_data[0] : res_data[1];
@@ -163,11 +164,11 @@ function compare_data(data) {
             rate[index] = {};
         }
         if (!old_avg[index]) {
-            rate[index] = 0;
+            old_avg[index] = 0;
         }
         for (var type in new_avg[index]) {
             if (!old_avg[index] || !old_avg[index][type]) {
-                rate[index][type] = 0;
+                rate[index][type] = "0%";
                 continue;
             }
             rate[index][type] = (((Number(new_avg[index][type]) - Number(old_avg[index][type])) * 100) / old_avg[index][type]).toFixed(2) + '%';

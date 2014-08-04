@@ -7,7 +7,7 @@ define([
     var configureCtrl = function ($scope, $http) {
         $('[rel="popover"],[data-rel="popover"]').popover();
         $scope.reportGroup = [];
-        $scope.toggleRiaCheck= function(flag, group) {
+        $scope.toggleCheck= function(flag, group) {
             if (flag) {
                 $scope.reportGroup.push(group);
             } else {
@@ -46,7 +46,7 @@ define([
                     return;
                 }
             }
-            if (!$scope.reportRiaMonth) {
+            if (!$scope.reportMonth) {
                 $scope.emailError = true;
                 return;
             }
@@ -54,9 +54,9 @@ define([
                 return;
             }
 
-            $http.post('/util/sendRiaReport', {
+            $http.post('/util/sendReport', {
                 addrs: JSON.stringify(addrs),
-                month: $scope.reportRiaMonth,
+                month: $scope.reportMonth,
                 group: JSON.stringify($scope.reportGroup)
             }).success(function(json, status, headers, config) {
                 if (json.code != 100000) {
