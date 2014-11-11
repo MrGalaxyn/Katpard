@@ -4,7 +4,7 @@ var login_cookies = require('weibo_cookies');
 var casper = require("casper").create({
     viewportSize: {
         width: 1280,
-        height: 1024
+        height: 800
     }
 });
 if (casper.cli.args.length < 1) {

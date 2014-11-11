@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Module dependencies.
+ * Module dependencies, for monitor use
  */
 var mongoose = require('mongoose');
 
@@ -69,32 +69,16 @@ module.exports = function (dbconn) {
     /**
      * url Schema
      */
-    var urlSchema = new Schema({
-        name: {
-            type: String,
-            default: '',
-            required: true,
-            trim: true
-        },
-        addr: {
-            type: String,
-            unique: true,
-            required: true,
-            trim: true
-        },
-        user: {
-            type: String,
-            required: true,
-            trim: true
-        },
-        password: {
-            type: String,
-            required: true,
-            trim: true
-        }
+    var data_schema = new Schema({
+        name: {type: String, default: '', required: true, trim: true},
+        addr: {type: String, unique: true,required: true, trim: true},
+        group: {type: String, trim: true},
+        user: {type: String, trim: true},
+        password: {type: String, trim: true},
+        ua: {type: String, trim: true}
     });
     // in case you defined this model somewhere else
     if (models.indexOf('monitor_url') === -1) {
-        dbconn.pagemonitor.model('monitor_url', urlSchema);
+        dbconn.pagemonitor.model('monitor_url', data_schema);
     }
 };

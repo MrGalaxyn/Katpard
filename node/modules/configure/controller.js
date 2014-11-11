@@ -27,6 +27,7 @@ module.exports = function (app) {
             addr: req.body.addr,
             user: req.body.user ? req.body.user : '',
             password: req.body.password ? req.body.password : '',
+            group: req.body.group ? req.body.group : '',
             ua: req.body.ua ? req.body.ua : ''
         };
 
@@ -53,6 +54,7 @@ module.exports = function (app) {
             addr: req.body.addr,
             user: req.body.user ? req.body.user : '',
             password: req.body.password ? req.body.password : '',
+            group: req.body.group ? req.body.group : '',
             ua: req.body.ua ? req.body.ua : ''
         };
         Url.update({_id: req.body.id}, reqData, function(error) {

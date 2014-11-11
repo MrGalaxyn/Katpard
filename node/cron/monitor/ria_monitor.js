@@ -166,7 +166,7 @@ function get_monitor_data(type) {
             for (var usr in args) {
                 moni_args.push([__dirname + '/automation_login.js', usr, args[usr].pw]);
                 for (var i in args[usr]['data']) {
-                    var fileDir = config.root + '/data1/pageMonitor/har/' + monitor_time.format("yyyy/MM/dd/hh/mm/");
+                    var fileDir = '/data1/pageMonitor/har/' + monitor_time.format("yyyy/MM/dd/hh/mm/");
                     var arg = [__dirname + '/automation_monitor_with_cookies.js', args[usr]['data'][i].addr, type, fileDir + args[usr]['data'][i]._id];
                     if (args[usr]['data'][i].ua) {
                         arg.push(args[usr]['data'][i].ua);
@@ -281,6 +281,7 @@ var process_har = function(hars_arr, cur, prev) {
     query.find(function(error, sData) {
         var median_map = calcMedian(sData, hars_arr);
         for (var index in median_map) {
+            if (!median_map[index]) continue;
             var oldPath = '/data1/pageMonitor/har/' + new newDate(median_map[index].getTime()).format("yyyy/MM/dd/hh/mm/") + index;
             var newPath = '/data1/pageMonitor/har/' + prev.format("yyyy/MM/dd/hh/");
             if (fs.existsSync(oldPath)) {
@@ -308,7 +309,7 @@ var process_har = function(hars_arr, cur, prev) {
 // 为了防止脚本多次执行
 // in case there is many tasks doing at the same time
 var cmd = 'ps -ef | grep ria_monitor.js | grep -v grep | wc -l';
-cp.exec(cmd, function(err, stdout, stderr){
+cp.exec(cmd, function(err, stdout, stderr) {
     if (Number(stdout) > 2) {
         db.close();
     }

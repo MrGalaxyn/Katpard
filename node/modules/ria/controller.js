@@ -121,7 +121,7 @@ module.exports = function (app) {
             }
         };
         var model = spec === 'timing' ? Timing : Other;
-        var query  = model.where(options).select(type + ' monitor_time').sort("-monitor_time");
+        var query  = model.where(options).select(type + ' monitor_time').sort("-monitor_time").lean();
         query.find(function (error, mData) {
             if(error || mData.length <= 0) {
                 res.json({
@@ -285,56 +285,103 @@ module.exports = function (app) {
         
         return cur;
     };
+    var calcScore = function(data, map) {
+        var fb = 0;
+        var fs = 0;
+        var score = 0;
+        for (var index in data) {
+            if (!map[index]) {
+                continue;
+            }
+            fb = 300 / parseInt(data[index].timeToFirstResFirstByte);
+            fs = (map[index].ua ? 1500 : 2000) / parseInt(data[index].timeTofirstScreenFinished);
+            score = (fb > 3 ? 0.8 : fb) * 70 * 0.4 + (fs > 3 ? 0.8 : fs) * 70 * 0.6;
+            score = score > 100 ? ((fb > 1 && fs > 1) ? 100 : 70) : parseInt(score);
+            data[index].score = score;
+        }
+
+        return data;
+    };
     // you can choose use average or median value
     this.getSummary = function(req, res) {
         var time = parseInt((req.query.time ? req.query.time : new Date().getTime()));
         var cnt = req.query.cnt ? req.query.cnt : 30;
         var type = req.query.type ? req.query.type : 'average';
-        var query = Timing.where({
-            monitor_time: {'$gte': time - 3600000 * 24 * cnt * 2, '$lte': time}
-        }).sort('-start_time');
+        var group = req.query.group ? req.query.group.split(',') : '';
 
-        query.find(function(error, eData) {
-            if(error) {
-                res.json({
+        URL.find(function(error, uData) {
+            if (error) {
+                    res.json({
                     code : 100001,
                     msg : error,
                     data: ''
                 });
                 return;
             }
-            var current = [];
-            var tmp = null;
-            while(tmp = eData.shift()) {
-                if (tmp.monitor_time.getTime() <= time - 3600000 * 24 * cnt){
-                    break;
+            var map = {};
+            for (var i in uData) {
+                if (uData[i] && !uData[i].name)
+                    continue;
+                if (group && group.indexOf(uData[i].group) == -1) 
+                    continue;
+                map[uData[i]._id] = {
+                    addr: uData[i].addr,
+                    name: uData[i].name,
+                    group: uData[i].group,
+                    ua: uData[i].ua
                 }
-                current.push(tmp);
             }
-            var handler = type === 'median' ? calcMedian : calcAverage;
-            var cur = handler(current);
-            var last = handler(eData);
-            compare(cur, last);
 
-            URL.find(function(error, uData) {
-                if (error) {
-                        res.json({
+            var cache = '/data1/pageMonitor/extra/' + cnt;
+            if (fs.existsSync(cache)) {
+                var data = JSON.parse(fs.readFileSync(cache));
+                if (data.result && new newDate().format("yyyyMMdd") == data.time) {
+                    var length = data.result.length;
+                    for (var i = 0; i < length; i++) {
+                        if (!data.result[i] || !map[data.result[i].index]) {
+                            data.result.splice(i, 1);
+                        }
+                    }
+                    res.json({
+                        code : 100000,
+                        msg : '成功',
+                        data: data.result
+                    });
+                    return;
+                }
+            }
+            var query_opts = {
+                // srcHost: '115.47.23.111',
+                monitor_time: {'$gte': time - 3600000 * 24 * cnt * 2, '$lte': time}
+            }
+            if (req.query.host) {
+                query_opts.srcHost = req.query.host;
+            }
+            var query = Timing.where(query_opts);
+            query = type === 'median' ? query.sort('-monitor_time') : query;
+            query.lean().find(function(error, eData) {
+                if(error) {
+                    res.json({
                         code : 100001,
                         msg : error,
                         data: ''
                     });
                     return;
                 }
-                var map = {};
-                for (var i in uData) {
-                    if (uData[i] && !uData[i].name) {
-                        continue;
+                var current = [];
+                var tmp = null;
+                while(tmp = eData.shift()) {
+                    if (tmp.monitor_time.getTime() <= time - 3600000 * 24 * cnt){
+                        break;
                     }
-                    map[uData[i]._id] = {
-                        addr: uData[i].addr,
-                        name: uData[i].name
-                    }
+                    current.push(tmp);
                 }
+                var handler = type === 'median' ? calcMedian : calcAverage;
+                var cur = handler(current);
+                var last = handler(eData);
+                cur = calcScore(cur, map);
+                last = calcScore(last, map);
+                compare(cur, last);
                 var result = [];
                 for (var index in cur) {
                     if (!map[index]) {
@@ -343,6 +390,10 @@ module.exports = function (app) {
                     result.push({
                         name: map[index].name,
                         url: map[index].addr,
+                        group: map[index].group,
+                        index: index,
+                        score: cur[index].score,
+                        scorer: cur[index].scorer,
                         timeToFirstResFirstByte: cur[index].timeToFirstResFirstByte,
                         timeToFirstResFirstByter: cur[index].timeToFirstResFirstByter,
                         onDOMReadyTime: cur[index].onDOMReadyTime,
@@ -378,6 +429,10 @@ module.exports = function (app) {
         var time = parseInt(req.query.time);
         var index = req.query.index;
         var filename = '/data1/pageMonitor/har/' + new newDate(time).format('yyyy/MM/dd/hh/') + index;
+        if (!fs.existsSync(filename)) {
+            res.send(('onInputData()'));
+            return;
+        }
         var har = fs.readFileSync(filename);
         res.send(('onInputData(' + har + ')'));
     };

@@ -37,7 +37,8 @@
               <thead>
                 <tr>
                   <th style="width:80px;">名称</th>
-                  <th style="width:160px;">地址</th>
+                  <th style="width:80px;">产品线</th>
+                  <th style="width:80px;">地址</th>
                   <th style="width:120px;">账号</th>
                   <th style="width:80px;">密码</th>
                   <th style="width:80px;">UserAgent</th>
@@ -49,6 +50,11 @@
                 <td>
                   <div class="controls">
                     <input class="span12" type="text" ng-model="newUrlName" placeholder="名称" required >
+                  </div>
+                </td>
+                <td>
+                  <div class="controls">
+                    <input class="span12" type="text" ng-model="newGroup" placeholder="名称" >
                   </div>
                 </td>
                 <td>
@@ -82,6 +88,10 @@
                 <td>
                   <span ng-model='url.name' ng-if="!url.editFlag">{{url.name}}</span>
                   <input ng-model='url.name' ng-if="url.editFlag" class="span12" type="text" value={{url.name}} required>
+                </td>
+                <td>
+                  <span ng-model='url.group' ng-if="!url.editFlag">{{url.group}}</span>
+                  <input ng-model='url.group' ng-if="url.editFlag" class="span12" type="text" value={{url.group}} >
                 </td>
                 <td class="center">
                   <span ng-model='url.addr' style="word-break:break-all;" ng-if="!url.editFlag">{{url.addr}}</span>

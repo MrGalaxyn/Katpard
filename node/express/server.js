@@ -4,6 +4,12 @@
  * Module dependencies.
  */
 var express = require('express');
+var bodyParser = require('body-parser');
+var methodOverride = require('method-override');
+var cookieParser = require('cookie-parser');
+var compression = require('compression');
+var directory = require('serve-index');
+var morgan = require('morgan');
 var config = require('../config/config');
 var path = require('path');
 var utilities = require('./utilities');
@@ -33,14 +39,12 @@ module.exports = function(dbconn) {
     });
 
     // Setting the environment locals
-    app.locals({
-        title: config.app.title,
-        description: config.app.description
-    });
+    app.locals.title = config.app.title;
+    app.locals.description = config.app.description;
 
     // Should be placed before express.static
     // 0: not compress
-    app.use(express.compress({
+    app.use(compression({
         filter: function(req, res) {
             return (/json|text|javascript|css/).test(res.getHeader('Content-Type'));
         },
@@ -61,43 +65,41 @@ module.exports = function(dbconn) {
     app.set('ip', config.ip || '127.0.0.1');
 
     // Application Configuration for development environment
-    app.configure('development', function() {
-        // Enable logger 
-        app.use(express.logger('dev'));
+    var env = process.env.NODE_ENV || 'development';
+    if (env == 'development') {
+       // Enable logger 
+        app.use(morgan('dev'));
 
         // Disable views cache
         app.set('view cache', false);
-    });
-
+    }
     // Application Configuration for production environment
-    app.configure('production', function() {
-        app.locals({
-            cache: 'memory' // To solve SWIG Cache Issues
-        });
-    });
+    if (env == 'production') {
+        app.locals.cache = 'memory'; // To solve SWIG Cache Issues
+    }
 
-    //  request body parsing middleware should be above methodOverride
-    app.use(express.urlencoded({limit: '50mb'}));
-    app.use(express.json({limit: '50mb'}));
-    app.use(express.methodOverride({limit: '50mb'}));
+    // Request body parsing middleware should be above methodOverride
+    app.use(bodyParser.urlencoded({
+        extended: true,
+        limit: '50mb'
+    }));
+    app.use(bodyParser.json({limit: '50mb'}));
+    app.use(methodOverride());
 
     // Enable jsonp
     app.enable('jsonp callback');
 
     // cookieParser should be above session
-    app.use(express.cookieParser());
-
-    // routes should be at the last
-    app.use(app.router);
-
-    // Setting the app router and static folder
-    app.use(express.static(config.root));
-    app.use(express.directory(config.root));
+    app.use(cookieParser());
 
     // Load Routes
     utilities.walk(__dirname + '/../modules', /route\.js$/).forEach(function(routePath) {
         require(path.resolve(routePath))(app);
     });
+
+    // Setting the app static folder and disable directory
+    // app.use(directory(config.root));
+    app.use(express.static(config.root));
 
     return app;
 };

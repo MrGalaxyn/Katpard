@@ -1,3 +1,4 @@
+#clean up har files which is out of date
 #!/bin/bash
 date=`date '+%Y/%m/%d' --date='30 days ago'`
 year=`date '+%Y' --date='30 days ago'`
