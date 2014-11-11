@@ -4,8 +4,10 @@ define([
     'app',
     "common/comp/commonChart",
     "lib/harViewer/harPreview",
-    "common/comp/datatable"
-], function (app, commonChart, HarPreview) {
+    'common/kit/util/loading',
+    "common/comp/datatable",
+    "lib/canvasjs/canvasjs"
+], function (app, CommonChart, HarPreview, Loading) {
     var riaCtrl = function ($scope, $http, $routeParams) {
         $scope.time = new Date().getTime();
         var types = [
@@ -91,13 +93,52 @@ define([
                 return;
             }
             $(".box-content").css('display','none');
+            Loading.showLoading();
             $http.get('/ria/getSummary?cnt=' + $scope.stat.cnt).
                 success(function(json, status, headers, config) {
-                    if (json.code != 100000) {
+                    if (json.code != 100000 || json.data.length <= 0) {
                         alert("服务器内部错误!");
                     }
-                    $scope.sums = json.data;
+                    $scope.sums = [];
+                    var ret = json.data;
+                    var length = ret.length;
+                    var result = {};
+                    for (var i = 0; i < ret.length; i++) {
+                        // 计算成绩
+                        switch(true) {
+                            case ret[i].score >= 90:
+                                ret[i].score += ' (A)';
+                                break;
+                            case ret[i].score >= 80:
+                                ret[i].score += ' (B)';
+                                break;
+                            case ret[i].score >= 70:
+                                ret[i].score += ' (C)';
+                                break;
+                            case ret[i].score >= 60:
+                                ret[i].score += ' (D)';
+                                break;
+                            default:
+                                ret[i].score += ' (E)';
+                                break;
+                        }
+                        if (!result[ret[i].group]) {
+                            result[ret[i].group] = [];
+                        }
+                        result[ret[i].group].push(ret[i]);
+                    }
+                    
+                    for (var i in result) {
+                        var len = result[i].length;
+                        for (var j = 0; j < len; j++) {
+                            // 设定group的值, 给anguler模板使用的,详见app/partials/ria.html
+                            result[i][j].len = len;
+                            $scope.sums.push(result[i][j]);
+                        }
+                    }
+                    
                     $(".box-content").css('display','');
+                    Loading.hideLoading();
                 });
         };
 
@@ -165,15 +206,10 @@ define([
         var render = function (index, stack, flag) {
             return function(json) {
                 if (json.code != 100000) {
-                    $(".box.span6").css('display','none');
-                    return;
-                }
-                if (json.data.data.length === 0) {
-                    $(".box.span6").css('display','none');
                     return;
                 }
                 if (stack !== -1) {
-                    commonChart({
+                    CommonChart({
                         click: flag ? function(e) {
                             showWaterFall($scope.pageUrl._id, new Date(e.dataPoint.x).getTime());
                         } : null,
@@ -207,7 +243,7 @@ define([
                     });
                     return;
                 }
-                commonChart({
+                CommonChart({
                     click: flag ? function(e) {
                         showWaterFall($scope.pageUrl._id, new Date(e.dataPoint.x).getTime());
                     } : null,
@@ -265,7 +301,7 @@ define([
         /************************** init**************************/
         $http.get('/configure/getUrl').
             success(function(json, status, headers, config) {
-                if (json.code != 100000) {
+                if (json.code != 100000 || json.data.length <= 0) {
                     alert("服务器内部错误!");
                 }
                 $scope.urls = json.data;

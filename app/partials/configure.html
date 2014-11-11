@@ -133,7 +133,64 @@
           </div>
         </div><!--/span-->
       </div>
-      
+      <div class="row-fluid sortable">
+        <div class="box span6">
+          <div class="box-header well" data-original-title>
+            <h2><i class="icon-edit"></i> 报告</h2>
+            <div class="box-icon">
+              <a href="javascript:void(0);" class="btn btn-minimize btn-round"><i class="icon-chevron-up"></i></a>
+              <a href="javascript:void(0);" class="btn btn-close btn-round"><i class="icon-remove"></i></a>
+            </div>
+          </div>
+          <div class="box-content">
+            <form class="form-horizontal">
+              <fieldset>
+                <div class="control-group">
+                  <label class="control-label">收件人地址</label>
+                  <div class="controls">
+                    <input type="text" ng-model="addrs" placeholder="email@example.com" required>
+                    <span class="help-inline">多个地址请以","分隔</span>
+                    <span class="help-inline label label-important" ng-if="emailError">邮件地址错误</span>
+                  </div>
+                </div>
+                <div class="control-group">
+                  <label class="control-label">产品线</label>
+                  <div class="controls">
+                    <label class="checkbox" ng-repeat="group in groups">
+                      <input type="checkbox" ng-click="toggleCheck($event.target.checked, group)"> {{group}}
+                    </label>
+                    <span class="help-inline label label-important" ng-if="reportGroup.length==0">请选择至少一个产品线</span>
+                  </div>
+                </div>
+                <div class="control-group">
+                  <label class="control-label">统计月份</label>
+                  <div class="controls">
+                    <select ng-model="reportMonth">
+                      <option value="">-- 请选择 --</option>
+                      <option value='1'>一月</option>
+                      <option value='2'>二月</option>
+                      <option value='3'>三月</option>
+                      <option value='4'>四月</option>
+                      <option value='5'>五月</option>
+                      <option value='6'>六月</option>
+                      <option value='7'>七月</option>
+                      <option value='8'>八月</option>
+                      <option value='9'>九月</option>
+                      <option value='10'>十月</option>
+                      <option value='11'>十一月</option>
+                      <option value='12'>十二月</option>
+                    </select>
+                    <span class="help-inline label label-important" ng-if="!reportMonth">请选择月份</span>
+                  </div>
+                </div>
+                <div class="form-actions">
+                  <button ng-click="sendReport()" class="btn btn-primary">发送报告</button>
+                </div>
+              </fieldset>
+            </form>
+          </div>
+        </div><!--/span-->
+      </div>
                     <!-- content ends -->
     </div><!--/javascript:void(0);content.span10-->
 
