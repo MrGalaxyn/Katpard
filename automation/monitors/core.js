@@ -79,7 +79,7 @@ var run_monitor = function(opt) {
         });
 
         timerId = setTimeout(function() {
-             casper.echo("error: no event is not emit![" + casper.getCurrentUrl() + "]", 1);
+            casper.die("error: no event is not emit![" + casper.getCurrentUrl() + "]", 1);
             // casper.capture(casper.cli.options["casper-path"] + '/../err/' + Date.now() + '.png');
             done();
         }, 10000);
