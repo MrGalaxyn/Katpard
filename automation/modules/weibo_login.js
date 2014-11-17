@@ -6,9 +6,8 @@ var login_cookies = require('weibo_cookies');
 module.exports = function(username, password) {
     /**************************handler*****************************/
     var error_handler =  function() {
-        this.echo("error: no expect selector");
-        this.capture("error_" + new Date().getTime() + ".png");
-        casper.exit();
+        this.die("error: [" + this.getCurrentUrl() + "] login failed! >> no expect selector", 1);
+        // this.capture("error_" + new Date().getTime() + ".png");
     };
     var check_login_page = function() {
         return /login\.php$/.test(this.getCurrentUrl());
@@ -36,7 +35,7 @@ module.exports = function(username, password) {
             // casperjs 按钮功能太简单了，捉急啊。。。
             // this.click('a[action-type=btn_submit]');
             // this.capture("summary.png");
-        }, error_handler, 60000);
+        }, error_handler, 10000);
     };
 
     var weibo_login_handler =  function() {
@@ -58,9 +57,9 @@ module.exports = function(username, password) {
     casper.then(function() {
         this.waitWhileSelector('input[name=username]', function() {
             this.echo("login done...");
+            login_cookies.writeCookie(username);
+            casper.exit(0);
             // this.capture("done.png");
-        }, error_handler, 60000);
+        }, error_handler, 10000);
     });
-
-    login_cookies.writeCookie();
 }

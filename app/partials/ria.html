@@ -45,19 +45,19 @@
                               <th class="center" style="width:10%;text-align:center;">产品线</th>
                               <th class="center" style="width:10%;text-align:center;">页面</th>
                               <th colspan="2" class="center" style="width:10%;text-align:center;">首包时间(ms)</th>
+                              <th colspan="2" class="center" style="width:10%;text-align:center;">白屏时间(ms)</th>
                               <th colspan="2" class="center" style="width:10%;text-align:center;">首屏时间(ms)</th>
-                              <th colspan="2" class="center" style="width:10%;text-align:center;">下载时间(ms)</th>
                               <th colspan="2" class="center" style="width:10%;text-align:center;">评分</th>
                             </tr>
                           </thead>   
                           <tbody>
                             <tr ng-repeat="sum in sums">
-                                <td ng-if="$index==0||sum.group!=sums[$index-1].group" rowspan="{{sum.len}}" style="vertical-align: middle;"><a href="javascript:;" ng-click="getDetail(sum.url)">{{sum.group}}</a></td>
-                                <td><a href="javascript:;" ng-click="getDetail(sum.group)">{{sum.name}}</a></td>
-                                <td class="center">{{sum.timeToFirstResFirstByte}}</td><td class="center"><span ng-if="sum.timeToFirstResFirstByter>0" style="color:red">{{sum.timeToFirstResFirstByter}}%</span><span ng-if="sum.timeToFirstResFirstByter<0" style="color:green">{{sum.timeToFirstResFirstByter}}%</span><span ng-if="sum.timeToFirstResFirstByter==0" style="color:green">{{sum.timeToFirstResFirstByter}}%</span></td>
-                                <td class="center">{{sum.timeTofirstScreenFinished}}</td><td class="center"><span ng-if="sum.timeTofirstScreenFinishedr>0" style="color:red">{{sum.timeTofirstScreenFinishedr}}%</span><span ng-if="sum.timeTofirstScreenFinishedr<0" style="color:green">{{sum.timeTofirstScreenFinishedr}}%</span><span ng-if="sum.timeTofirstScreenFinishedr==0" style="color:green">{{sum.timeTofirstScreenFinishedr}}%</span></td>
-                                <td class="center">{{sum.httpTrafficCompleted}}</td><td class="center"><span ng-if="sum.httpTrafficCompletedr>0" style="color:red">{{sum.httpTrafficCompletedr}}%</span><span ng-if="sum.httpTrafficCompletedr<0" style="color:green">{{sum.httpTrafficCompletedr}}%</span><span ng-if="sum.httpTrafficCompletedr==0" style="color:green">{{sum.httpTrafficCompletedr}}%</span></td>
-                                <td class="center">{{sum.score}}</td><td class="center"><span ng-if="sum.scorer>0" style="color:red">{{sum.scorer}}%</span><span ng-if="sum.scorer<0" style="color:green">{{sum.scorer}}%</span><span ng-if="sum.scorer==0" style="color:green">{{sum.scorer}}%</span></td>
+                                <td ng-if="$index==0||sum.group!=sums[$index-1].group" rowspan="{{sum.len}}" style="vertical-align: middle; text-align:center;">{{sum.group}}</td>
+                                <td><a href="javascript:;" ng-click="getDetail(sum.addr)">{{sum.name}}</a></td>
+                                <td class="center" style="text-align:center;">{{sum.timeToFirstResFirstByte}}</td><td class="center" style="text-align:center;"><span ng-if="sum.timeToFirstResFirstByter>0" style="color:red">{{sum.timeToFirstResFirstByter}}%</span><span ng-if="sum.timeToFirstResFirstByter<0" style="color:green">{{sum.timeToFirstResFirstByter}}%</span><span ng-if="sum.timeToFirstResFirstByter==0" style="color:green">{{sum.timeToFirstResFirstByter}}%</span></td>
+                                <td class="center" style="text-align:center;">{{sum.timeToFirstPaintRequested}}</td><td class="center" style="text-align:center;"><span ng-if="sum.timeToFirstPaintRequestedr>0" style="color:red">{{sum.timeToFirstPaintRequestedr}}%</span><span ng-if="sum.timeToFirstPaintRequestedr<0" style="color:green">{{sum.timeToFirstPaintRequestedr}}%</span><span ng-if="sum.timeToFirstPaintRequestedr==0" style="color:green">{{sum.timeToFirstPaintRequestedr}}%</span></td>
+                                <td class="center" style="text-align:center;">{{sum.timeToFirstScreenFinished}}</td><td class="center" style="text-align:center;"><span ng-if="sum.timeToFirstScreenFinishedr>0" style="color:red">{{sum.timeToFirstScreenFinishedr}}%</span><span ng-if="sum.timeToFirstScreenFinishedr<0" style="color:green">{{sum.timeToFirstScreenFinishedr}}%</span><span ng-if="sum.timeToFirstScreenFinishedr==0" style="color:green">{{sum.timeToFirstScreenFinishedr}}%</span></td>
+                                <td class="center" style="text-align:center;">{{sum.score}}</td><td class="center" style="text-align:center;"><span ng-if="sum.scorer>0" style="color:red">{{sum.scorer}}%</span><span ng-if="sum.scorer<0" style="color:green">{{sum.scorer}}%</span><span ng-if="sum.scorer==0" style="color:green">{{sum.scorer}}%</span></td>
                             </tr>
                           </tbody>
                         </table>
@@ -224,17 +224,3 @@
             </div>
                     <!-- content ends -->
             </div><!--/javascript:void(0);content.span10-->
-
-        <div class="modal hide fade" id="myModal">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">×</button>
-                <h3>Settings</h3>
-            </div>
-            <div class="modal-body">
-                <p>Here settings can be configured...</p>
-            </div>
-            <div class="modal-footer">
-                <a href="javascript:void(0);" class="btn" data-dismiss="modal">Close</a>
-                <a href="javascript:void(0);" class="btn btn-primary">Save changes</a>
-            </div>
-        </div>

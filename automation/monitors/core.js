@@ -58,7 +58,8 @@ var run_monitor = function(opt) {
             }
             timerId = setTimeout(function() {
                 if (eventFlag !== 11) {
-                    casper.capture('/data1/pageMonitor/err/' + Date.now() + '.png');
+                    casper.die("error: firstScreen is not emit![" + casper.getCurrentUrl() + "]", 1);
+                    // casper.capture(casper.cli.options["casper-path"] + '/../err/' + Date.now() + '.png');
                 }
                 done();
             }, eventFlag === 11 ? 3000 : 8000);
@@ -70,14 +71,16 @@ var run_monitor = function(opt) {
             }
             timerId = setTimeout(function() {
                 if (eventFlag !== 11) {
-                    casper.capture('/data1/pageMonitor/err/' + Date.now() + '.png');
+                    casper.die("error: pageLoad is not emit![" + casper.getCurrentUrl() + "]", 1);
+                    // casper.capture(casper.cli.options["casper-path"] + '/../err/' + Date.now() + '.png');
                 }
                 done();
             }, eventFlag === 11 ? 3000 : 8000);
         });
 
         timerId = setTimeout(function() {
-            casper.capture('/data1/pageMonitor/err/' + Date.now() + '.png');
+             casper.echo("error: no event is not emit![" + casper.getCurrentUrl() + "]", 1);
+            // casper.capture(casper.cli.options["casper-path"] + '/../err/' + Date.now() + '.png');
             done();
         }, 10000);
     });

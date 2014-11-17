@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Module dependencies, for monitor use
+ * Module dependencies, for displaying monitor data
  */
 var mongoose = require('mongoose');
 
@@ -20,9 +20,11 @@ module.exports = function (dbconn) {
         onDOMReadyTime: { type: Number,required: true},
         windowOnLoadTime: {type: Number, required: true},
         timeFrontendRate: {type: Number, required: true},
-        timeTofirstScreenFinished: {type: Number, required: true},
+        timeToFirstScreenFinished: {type: Number, required: true},
+        timeToFirstPaintRequested: {type: Number, required: true},
 
         monitor_time: {type: Date, require: true},
+        srcHost: {type: String, trim: true},
         index: {type: String, required: true, trim: true}
     });
     // in case you defined this model somewhere else

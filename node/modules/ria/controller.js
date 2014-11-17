@@ -1,4 +1,5 @@
 var fs = require('fs');
+var path = require('path');
 var newDate = require(__dirname + '/../../common/dateFormat');
 
 module.exports = function (app) {
@@ -7,7 +8,7 @@ module.exports = function (app) {
     var URL = app.dbconn.pagemonitor.model('monitor_url');
 
     // process timing data
-    function process_timing(data, type, interval) {
+    function processTiming(data, type, interval) {
         if (!type) {
             return;
         }
@@ -15,7 +16,7 @@ module.exports = function (app) {
         var standard = new newDate(tmp).getTime();
         var interval = interval || 3600000;
         tmp = [];
-        var res = [];
+        var result = [];
         var last = 0;
         var delta = 0;
 
@@ -49,7 +50,7 @@ module.exports = function (app) {
                     }
                 }
                 if (min !== 0) {
-                    res.push({
+                    result.push({
                         x: lstandard,
                         y: [min]
                     });
@@ -75,32 +76,32 @@ module.exports = function (app) {
                 } 
             }
             if (min !== 0) {
-                res.push({
+                result.push({
                     x: timestamp,
                     y: [min]
                 });
             }
         }
-        return res;
+        return result;
     }
 
-    function process_other(data, type) {
+    function processOther(data, type) {
         if (!type) {
             return;
         }
 
-        var res = [];
+        var result = [];
         for (var i = 0; i < data.length; i++) {
-            res.push({
+            result.push({
                 x: data[i].monitor_time.getTime(),
                 y: [data[i][type]]
             });
         }
 
-        return res;
+        return result;
     }
 
-    function get_montior_data(req, res, spec) {
+    function getMontiorData(req, res, spec) {
         var from = Number(req.query.from);
         var to = Number(req.query.to);
         var index = req.query.index;
@@ -113,16 +114,20 @@ module.exports = function (app) {
             });
             return;
         }
-        var options = {
+        var search = {
             index: index,
             monitor_time: {
                 '$gte': new Date(req.query.with_compare ? to - (to - from) : from),
                 '$lte': new Date(to)
             }
         };
+        var fields = type + ' monitor_time';
+        var options = {
+            lean: true,
+            sort: {monitor_time: -1}
+        };
         var model = spec === 'timing' ? Timing : Other;
-        var query  = model.where(options).select(type + ' monitor_time').sort("-monitor_time").lean();
-        query.find(function (error, mData) {
+        model.find(search, fields, options, function (error, mData) {
             if(error || mData.length <= 0) {
                 res.json({
                     code : 100001,
@@ -131,7 +136,7 @@ module.exports = function (app) {
                 });
                 return;
             } else {
-                var data = spec === 'timing' ? process_timing(mData, type) : process_other(mData, type);
+                var data = spec === 'timing' ? processTiming(mData, type) : processOther(mData, type);
                 if (!data) {
                     res.json({
                         code : 100001,
@@ -166,105 +171,52 @@ module.exports = function (app) {
     };
 
     this.getTiming = function(req, res) {
-        get_montior_data(req, res, 'timing');
+        getMontiorData(req, res, 'timing');
     };
     this.getOther = function(req, res) {
-        get_montior_data(req, res, 'other');
+        getMontiorData(req, res, 'other');
     };
 
     var calcAverage = function(summary_data) {
         var tmp = {};
         var res = {};
-
-        for (var i in summary_data) {
-            if (!tmp[summary_data[i].index]) {
-                tmp[summary_data[i].index] = [];
+        var length = summary_data.length;
+        for (var i = 0; i < length; i++) {
+            var index = summary_data[i].index
+            if (!tmp[index]) {
+                tmp[index] = {
+                    fbCnt: 0,
+                    timeToFirstResFirstByte: 0,
+                    fpCnt: 0,
+                    timeToFirstPaintRequested: 0,
+                    fsCnt: 0,
+                    timeToFirstScreenFinished: 0
+                };
             }
-            if ((summary_data[i].timeToFirstResFirstByte && (Number(summary_data[i].timeToFirstResFirstByte) < 0 || Number(summary_data[i].timeToFirstResFirstByte) > 200000)) ||
-                (summary_data[i].onDOMReadyTime && (Number(summary_data[i].onDOMReadyTime) < 0 || Number(summary_data[i].onDOMReadyTime) > 200000)) ||
-                (summary_data[i].windowOnLoadTime && (Number(summary_data[i].windowOnLoadTime) < 0 || Number(summary_data[i].windowOnLoadTime) > 200000)) ||
-                (summary_data[i].timeTofirstScreenFinished && (Number(summary_data[i].timeTofirstScreenFinished) < 0 || Number(summary_data[i].timeTofirstScreenFinished) > 200000)) ||
-                (summary_data[i].httpTrafficCompleted && (Number(summary_data[i].httpTrafficCompleted) < 0 || Number(summary_data[i].httpTrafficCompleted) > 200000))) {
-                continue;
+            if (summary_data[i].timeToFirstResFirstByte && 
+                summary_data[i].timeToFirstResFirstByte > 0 && 
+                summary_data[i].timeToFirstResFirstByte < 20000) {
+                tmp[index].timeToFirstResFirstByte += summary_data[i].timeToFirstResFirstByte;
+                tmp[index].fbCnt++;
             }
-            tmp[summary_data[i].index].push(summary_data[i]);
-        }
-        for (var index in tmp) {
-            var timeToFirstResFirstByte = 0;
-            var onDOMReadyTime = 0;
-            var windowOnLoadTime = 0;
-            var timeTofirstScreenFinished = 0;
-            var httpTrafficCompleted = 0;
-            
-            var i = 0;
-            var fixFs = 0;
-            for (; i < tmp[index].length; i++) {
-                timeToFirstResFirstByte += Number(tmp[index][i].timeToFirstResFirstByte);
-                onDOMReadyTime += Number(tmp[index][i].onDOMReadyTime);
-                windowOnLoadTime += Number(tmp[index][i].windowOnLoadTime);
-                httpTrafficCompleted += Number(tmp[index][i].httpTrafficCompleted);
-
-                if (tmp[index][i].timeTofirstScreenFinished) {
-                    timeTofirstScreenFinished += Number(tmp[index][i].timeTofirstScreenFinished);
-                    fixFs++;
-                }
+            if (summary_data[i].timeToFirstPaintRequested && 
+                summary_data[i].timeToFirstPaintRequested > 0 && 
+                summary_data[i].timeToFirstPaintRequested < 20000) {
+                tmp[index].timeToFirstPaintRequested += summary_data[i].timeToFirstPaintRequested;
+                tmp[index].fpCnt++;
             }
-
-            res[index] = {
-                timeToFirstResFirstByte: (timeToFirstResFirstByte / i).toFixed(2),
-                onDOMReadyTime: (onDOMReadyTime / i).toFixed(2),
-                windowOnLoadTime: (windowOnLoadTime / i).toFixed(2),
-                timeTofirstScreenFinished: fixFs != 0 ? (timeTofirstScreenFinished / fixFs).toFixed(2) : 0,
-                httpTrafficCompleted: (httpTrafficCompleted / i).toFixed(2)
+            if (summary_data[i].timeToFirstScreenFinished && 
+                summary_data[i].timeToFirstScreenFinished > 0 && 
+                summary_data[i].timeToFirstScreenFinished < 20000) {
+                tmp[index].timeToFirstScreenFinished += summary_data[i].timeToFirstScreenFinished;
+                tmp[index].fsCnt++;
             }
         }
-        return res;
-    };
-    var calcMedian = function(summary_data) {
-        var tmp = {};
-        var res = {};
-
-        for (var i in summary_data) {
-            if (!tmp[summary_data[i].index]) {
-                tmp[summary_data[i].index] = [];
-            }
-            if ((summary_data[i].timeToFirstResFirstByte && (Number(summary_data[i].timeToFirstResFirstByte) < 0 || Number(summary_data[i].timeToFirstResFirstByte) > 200000)) ||
-                (summary_data[i].onDOMReadyTime && (Number(summary_data[i].onDOMReadyTime) < 0 || Number(summary_data[i].onDOMReadyTime) > 200000)) ||
-                (summary_data[i].windowOnLoadTime && (Number(summary_data[i].windowOnLoadTime) < 0 || Number(summary_data[i].windowOnLoadTime) > 200000)) ||
-                (summary_data[i].timeTofirstScreenFinished && (Number(summary_data[i].timeTofirstScreenFinished) < 0 || Number(summary_data[i].timeTofirstScreenFinished) > 200000)) ||
-                (summary_data[i].httpTrafficCompleted && (Number(summary_data[i].httpTrafficCompleted) < 0 || Number(summary_data[i].httpTrafficCompleted) > 200000))) {
-                continue;
-            }
-            tmp[summary_data[i].index].push(summary_data[i]);
-        }
-        for (var index in tmp) {
-            var timeToFirstResFirstByte = 0;
-            var onDOMReadyTime = 0;
-            var windowOnLoadTime = 0;
-            var timeTofirstScreenFinished = 0;
-            var httpTrafficCompleted = 0;
-            
-            var cnt = parseInt(tmp[index].length / 2);
-            for (i = 0; i <= cnt; i++) {
-                var min = 10000000;
-                var midx = -1;
-                for (var j = 0; j < tmp[index].length; j++) {
-                    if (min > Number(tmp[index][j].httpTrafficCompleted)) {
-                        min = tmp[index][j].httpTrafficCompleted;
-                        midx = j;
-                    }
-                }
-                if (i < cnt) {
-                    tmp[index].splice(midx, 1);
-                }
-            }
-
-            res[index] = {
-                timeToFirstResFirstByte: tmp[index][midx].timeToFirstResFirstByte === 10000000 ? 0 : tmp[index][midx].timeToFirstResFirstByte,
-                timeTofirstScreenFinished: tmp[index][midx].timeTofirstScreenFinished === 10000000 ? 0 : tmp[index][midx].timeTofirstScreenFinished,
-                onDOMReadyTime: tmp[index][midx].onDOMReadyTime === 10000000 ? 0 : tmp[index][midx].onDOMReadyTime,
-                windowOnLoadTime: tmp[index][midx].windowOnLoadTime === 10000000 ? 0 : tmp[index][midx].windowOnLoadTime,
-                httpTrafficCompleted: tmp[index][midx].httpTrafficCompleted === 10000000 ? 0 : tmp[index][midx].httpTrafficCompleted
+        for (var idx in tmp) {
+            res[idx] = {
+                timeToFirstResFirstByte: Number((tmp[idx].timeToFirstResFirstByte / tmp[idx].fbCnt).toFixed(2)),
+                timeToFirstPaintRequested: Number((tmp[idx].timeToFirstPaintRequested / tmp[idx].fpCnt).toFixed(2)),
+                timeToFirstScreenFinished: Number((tmp[idx].timeToFirstScreenFinished / tmp[idx].fsCnt).toFixed(2))
             }
         }
         return res;
@@ -293,20 +245,46 @@ module.exports = function (app) {
             if (!map[index]) {
                 continue;
             }
-            fb = 300 / parseInt(data[index].timeToFirstResFirstByte);
-            fs = (map[index].ua ? 1500 : 2000) / parseInt(data[index].timeTofirstScreenFinished);
+            fb = 300 / data[index].timeToFirstResFirstByte;
+            fs = (map[index].ua ? 1500 : 2000) / data[index].timeToFirstScreenFinished;
             score = (fb > 3 ? 0.8 : fb) * 70 * 0.4 + (fs > 3 ? 0.8 : fs) * 70 * 0.6;
-            score = score > 100 ? ((fb > 1 && fs > 1) ? 100 : 70) : parseInt(score);
-            data[index].score = score;
+            score = score > 100 ? ((fb > 1 && fs > 1) ? 100 : 70) : score;
+            data[index].score = parseInt(score);
         }
 
         return data;
     };
+    var calcSummayResult = function(newData, oldData, map) {
+        // if data is not ready;
+        if (!newData || !oldData)
+            return false;
+        compare(newData, oldData);
+        var result = [];
+        for (var index in newData) {
+            if (!map[index]) {
+                continue;
+            }
+            result.push({
+                name: map[index].name,
+                url: map[index].addr,
+                group: map[index].group,
+                index: index,
+                score: newData[index].score,
+                scorer: newData[index].scorer,
+                timeToFirstResFirstByte: newData[index].timeToFirstResFirstByte,
+                timeToFirstResFirstByter: newData[index].timeToFirstResFirstByter,
+                timeToFirstScreenFinished: newData[index].timeToFirstScreenFinished,
+                timeToFirstScreenFinishedr: newData[index].timeToFirstScreenFinishedr,
+                timeToFirstPaintRequested: newData[index].timeToFirstPaintRequested,
+                timeToFirstPaintRequestedr: newData[index].timeToFirstPaintRequestedr
+            });
+        }
+        return result;
+    }
     // you can choose use average or median value
     this.getSummary = function(req, res) {
         var time = parseInt((req.query.time ? req.query.time : new Date().getTime()));
         var cnt = req.query.cnt ? req.query.cnt : 30;
-        var type = req.query.type ? req.query.type : 'average';
         var group = req.query.group ? req.query.group.split(',') : '';
 
         URL.find(function(error, uData) {
@@ -332,7 +310,7 @@ module.exports = function (app) {
                 }
             }
 
-            var cache = '/data1/pageMonitor/extra/' + cnt;
+            var cache = path.join(__dirname, '../../../cache', cnt);
             if (fs.existsSync(cache)) {
                 var data = JSON.parse(fs.readFileSync(cache));
                 if (data.result && new newDate().format("yyyyMMdd") == data.time) {
@@ -350,17 +328,37 @@ module.exports = function (app) {
                     return;
                 }
             }
-            var query_opts = {
+            var searchCur = {
                 // srcHost: '115.47.23.111',
-                monitor_time: {'$gte': time - 3600000 * 24 * cnt * 2, '$lte': time}
-            }
+                monitor_time: {'$gt': time - 3600000 * 24 * cnt, '$lte': time}
+            };
+            var searchPast = {
+                // srcHost: '115.47.23.111',
+                monitor_time: {'$gt': time - 3600000 * 24 * cnt * 2, '$lte': time - 3600000 * 24 * cnt}
+            };
             if (req.query.host) {
-                query_opts.srcHost = req.query.host;
+                searchCur.srcHost = req.query.host;
+                searchPast.srcHost = req.query.host;
             }
-            var query = Timing.where(query_opts);
-            query = type === 'median' ? query.sort('-monitor_time') : query;
-            query.lean().find(function(error, eData) {
+            var fields = {
+                index: 1,
+                monitor_time: 1,
+                timeToFirstResFirstByte: 1,
+                timeToFirstScreenFinished: 1,
+                timeToFirstPaintRequested: 1
+            };
+            var options = {
+                lean: true,
+                sort: {monitor_time: -1}
+            };
+            var bdError = false;
+            var cur = false;
+            var past = false;
+            Timing.find(searchCur, fields, options, function(error, currentData) {
+                if (bdError)
+                    return;
                 if(error) {
+                    bdError = true;
                     res.json({
                         code : 100001,
                         msg : error,
@@ -368,49 +366,39 @@ module.exports = function (app) {
                     });
                     return;
                 }
-                var current = [];
-                var tmp = null;
-                while(tmp = eData.shift()) {
-                    if (tmp.monitor_time.getTime() <= time - 3600000 * 24 * cnt){
-                        break;
-                    }
-                    current.push(tmp);
-                }
-                var handler = type === 'median' ? calcMedian : calcAverage;
-                var cur = handler(current);
-                var last = handler(eData);
-                cur = calcScore(cur, map);
-                last = calcScore(last, map);
-                compare(cur, last);
-                var result = [];
-                for (var index in cur) {
-                    if (!map[index]) {
-                        continue;
-                    }
-                    result.push({
-                        name: map[index].name,
-                        url: map[index].addr,
-                        group: map[index].group,
-                        index: index,
-                        score: cur[index].score,
-                        scorer: cur[index].scorer,
-                        timeToFirstResFirstByte: cur[index].timeToFirstResFirstByte,
-                        timeToFirstResFirstByter: cur[index].timeToFirstResFirstByter,
-                        onDOMReadyTime: cur[index].onDOMReadyTime,
-                        onDOMReadyTimer: cur[index].onDOMReadyTimer,
-                        windowOnLoadTime: cur[index].windowOnLoadTime,
-                        windowOnLoadTimer: cur[index].windowOnLoadTimer,
-                        timeTofirstScreenFinished: cur[index].timeTofirstScreenFinished,
-                        timeTofirstScreenFinishedr: cur[index].timeTofirstScreenFinishedr,
-                        httpTrafficCompleted: cur[index].httpTrafficCompleted,
-                        httpTrafficCompletedr: cur[index].httpTrafficCompletedr
+                var tmp = calcAverage(currentData);
+                cur = calcScore(tmp, map);
+                var result = calcSummayResult(cur, past, map);
+                if (result) {
+                    res.json({
+                        code : 100000,
+                        msg : '成功',
+                        data: result
                     });
                 }
-                res.json({
-                    code : 100000,
-                    msg : '成功',
-                    data: result
-                });
+            });
+            Timing.find(searchPast, fields, options, function(error, pastData) {
+                if (bdError)
+                    return;
+                if(error) {
+                    bdError = true;
+                    res.json({
+                        code : 100001,
+                        msg : error,
+                        data: ''
+                    });
+                    return;
+                }
+                var tmp = calcAverage(pastData);
+                past = calcScore(tmp, map);
+                var result = calcSummayResult(cur, past, map);
+                if (result) {
+                    res.json({
+                        code : 100000,
+                        msg : '成功',
+                        data: result
+                    });
+                }
             });
         });
     };
@@ -428,7 +416,7 @@ module.exports = function (app) {
         }
         var time = parseInt(req.query.time);
         var index = req.query.index;
-        var filename = '/data1/pageMonitor/har/' + new newDate(time).format('yyyy/MM/dd/hh/') + index;
+        var filename = path.join(__dirname, '../../../har', new newDate(time).format('yyyy/MM/dd/hh/'), index);
         if (!fs.existsSync(filename)) {
             res.send(('onInputData()'));
             return;
@@ -437,3 +425,5 @@ module.exports = function (app) {
         res.send(('onInputData(' + har + ')'));
     };
 };
+
+

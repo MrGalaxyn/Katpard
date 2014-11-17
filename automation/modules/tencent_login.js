@@ -6,9 +6,8 @@ var login_cookies = require('tencent_cookies');
 module.exports = function(username, password) {
     /**************************handler*****************************/
     var error_handler =  function() {
-        this.echo("error: no expect selector");
-        this.capture("error_" + new Date().getTime() + ".png");
-        casper.exit();
+        this.die("error: [" + this.getCurrentUrl() + "] login failed! >> no expect selector", 1);
+        // this.capture("error_" + new Date().getTime() + ".png");
     };
     var do_login = function() {
         casper.waitForSelector('input[name=u]', function() {
@@ -46,9 +45,9 @@ module.exports = function(username, password) {
     casper.then(function() {
         this.waitWhileSelector('input[name=u]', function() {
             this.echo("login done...");
+            login_cookies.writeCookie(username);
             // this.capture("done.png");
         }, error_handler, 60000);
     });
 
-    login_cookies.writeCookie();
 }

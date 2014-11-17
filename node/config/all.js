@@ -6,7 +6,7 @@ var rootPath = path.normalize(__dirname + '/../..');
 module.exports = {
     app: {
         title: 'katpard page monitor',
-        description: 'modified for weibo ria'
+        description: 'application used to get web page performance data!'
     },
     root: rootPath + '/app',
     port: process.env.PORT || 3000,

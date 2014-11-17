@@ -171,7 +171,6 @@ exports.module = function(results, file) {
     };
 
     var prefix = file.lastIndexOf("/") > file.lastIndexOf("\\") ? file.lastIndexOf("/") : file.lastIndexOf("\\");
-    fs.makeTree(prefix);
     path = file;
 
     casper.log('HAR path: %s', path);
@@ -239,6 +238,7 @@ exports.module = function(results, file) {
 
         casper.log("Write HAR in '%s'", path);
         try {
+            fs.makeTree(prefix);
             fs.write(path, dump);
         } catch (e) {
             casper.log('Impossible write HAR file: %s', e);

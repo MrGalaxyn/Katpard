@@ -8,7 +8,7 @@ Katpard是一套前端页面性能检测系统，这套系统是为了帮助前�
 * 页面性能对比
 
 # Requirements
-Katpard 依赖 [NodeJS](http://nodejs.org) 和 [MongoDB](http://www.mongodb.org/) 来存取数据，因此在使用本系统前请务必安装nodejs（推荐0.10.x+）以及mongoDB
+Katpard 依赖 [NodeJS](http://nodejs.org) 和 [MongoDB](http://www.mongodb.org/) 来存取数据，因此在使用本系统前请务必安装nodejs（推荐0.10.x+）以及mongoDB。另外，你需要下载[PhantomJS (v1.9.7)](https://github.com/ariya/phantomjs)的源码，并使用我们的代码覆盖相应的文件，将编译后的文件放在automation/bin/ 目录，来获得katpard系统需要的支持
 
 # 部署
 自动部署前，你必须提供一个mongoDB的地址以及可用账户及密码，和node可执行文件的路径
@@ -53,7 +53,8 @@ Katpard系统中，你可以设置模拟某类终端的UA，从而获取比如�
     * windowOnLoadTime: 触发onLoad事件的时间(ms)
     * timeBackend: 后端响应时间占比[%]
     * timeFrontend: 后端响应时间占比[%]
-    * timeTofirstScreenFinished: 首屏时间(ms)
+    * timeToFirstScreenFinished: 首屏时间(ms)
+    * timeToFirstPaintRequested: 白屏时间(ms)
     * timeToFirstCss: 接收首个css文件最后一个字节的时间(ms)
     * timeToFirstJs: 接收首个js文件最后一个字节的时间(ms)
 * **DOM相关**
@@ -85,14 +86,6 @@ Katpard系统中，你可以设置模拟某类终端的UA，从而获取比如�
     * imageSize: 图片响应总字节数
 * **HAR文件相关**
 
-#TO DO
-
-1. 增加带宽模拟功能
-2. 提供完善的评分、优化建议功能
-3. 让图表展示更漂亮
-4. 优化算法，提升后端node数据计算的速度
-5. ...
-
 # 感谢
 感谢以下的项目,排名不分先后
 
@@ -106,6 +99,15 @@ Katpard系统中，你可以设置模拟某类终端的UA，从而获取比如�
 * [charisma](https://github.com/usmanhalalit/charisma)
 
 非常感谢[@Cherish_Yui_1388](http://weibo.com/daiyiyi1991)将README翻译成英文版
+
+# 更新
+* **v1.1.0**
+    * 修改之前存在的某些bug
+    * 优化后端数据计算的算法
+    * 更改前端统计页面的样式，增加白屏时间，去掉了DOM与load时间，增加评分概念(通过首屏与首包时间计算)
+    * 增加修改的phantomJS的源代码，主要是在phantomJS中增加了首屏时间与白屏时间
+    * 增加了新的采样方法，详见php/cron/monitor.php
+    * 修改了取样的窗口大小为1280 * 800，增加对自定义userAgent的支持
 
 #LICENCE
 MIT
@@ -122,7 +124,7 @@ Katpard is a front-end performance monitoring system, the purpose of this system
 * page performance comparison
 
 # Requirements
-Katpard depends on [NodeJS](http://nodejs.org) and [MongoDB](http://www.mongodb.org/) to access data, so please install nodejs (recommend 0.10.x+) and mongoDB before you use this system.
+Katpard depends on [NodeJS](http://nodejs.org) and [MongoDB](http://www.mongodb.org/) to access data, so please install nodejs (recommend 0.10.x+) and mongoDB before you use this system.Meanwhile, you should download the source code of [PhantomJS (v1.9.7)](https://github.com/ariya/phantomjs), and substitute with the specified file we provide in our code, build it and copy it to the path automation/bin/phantomjs
 
 # Deployment
 Before deployment automation, you have to provide a mongoDB address and an available account, password, and path for node executable file. Of course you can operate by yourself according to the commands in the project script.
@@ -166,7 +168,8 @@ In Katpard, you can set to simulate UA of some kind of terminal, thus you can ob
     * windowOnLoadTime: time it took to fire window.load event(ms)
     * timeBackend: time to the first byte compared to the total loading time[%]
     * timeFrontend: time to window.load compared to the total loading time[%]
-    * timeTofirstScreenFinished: time it took to finish render first screen(ms)
+    * timeToFirstScreenFinished: time it took to finish render first screen(ms)
+    * timeToFirstPaintRequested: time it took to start the first paint(ms)
     * timeToFirstCss: time it took to receive the last byte of the first CSS(ms)
     * timeToFirstJs: time it took to receive the last byte of the first JS(ms)
 * **DOM**
@@ -198,12 +201,6 @@ In Katpard, you can set to simulate UA of some kind of terminal, thus you can ob
     * imageSize: size of image responses
 * **HAR File Relevant**
 
-#TO DO
-1. Provide thorough rating, optimizing and suggestion function
-2. Let chart display more beautiful
-3. Optimze the algorithm
-4. ...
-
 # Acknowledgements
 Thanks the following projects, this list is in no particular order
 
@@ -217,6 +214,15 @@ Thanks the following projects, this list is in no particular order
 * [charisma](https://github.com/usmanhalalit/charisma)
 
 Special thanks to [Yui Dai](https://www.facebook.com/profile.php?id=100004219414353) for this English version README
+
+# Update
+* **v1.1.0**
+    * Fixed some bug in v1.1.0
+    * Optimzed the algorithm. If that's not good enough for you, try the script node/cron/cache/ria_result_calculate.js to make a cache
+    * Changed the page style of performace data page, add start painting time,remove DOM and page load time, add a score which based on first screen and first byte
+    * Added the phantomjs source code we modified for katpard system, just build it for your machine
+    * Added a new way to get performace data, read php/cron/monitor.php for detail
+    * Changed the view port of the monitor page to 1280 * 800, and you can customize userAgent now
 
 #LICENCE
 MIT

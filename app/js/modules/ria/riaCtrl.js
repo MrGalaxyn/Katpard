@@ -16,7 +16,8 @@ define([
                 uri: '/ria/getTiming', 
                 types: [
                     'timeToFirstResFirstByte',
-                    'timeTofirstScreenFinished',
+                    'timeToFirstPaintRequested',
+                    'timeToFirstScreenFinished',
                     'onDOMReadyTime',
                     'windowOnLoadTime',
                     'httpTrafficCompleted',
@@ -24,6 +25,18 @@ define([
                     'timeToFirstCss',
                     'timeToFirstJs',
                     'slowestResponse'
+                ],
+                names: [
+                    '首包时间',
+                    '白屏时间',
+                    '首屏时间',
+                    'DOMReady',
+                    '加载时间',
+                    '总下载时间',
+                    '前后端时间比',
+                    '首CSS时间',
+                    '首JS时间',
+                    '最慢响应'
                 ]
             },
             {
@@ -176,7 +189,7 @@ define([
                 return;
             }
             $scope.harLocker = true;
-            var URL = 'http://172.16.142.32:3000/ria/getHar?index=' + index + '&time=' + time;
+            var URL = 'http://localhost/ria/getHar?index=' + index + '&time=' + time;
             $('#waterfall')[0].innerHTML = '';
 
             var settings = {
@@ -287,7 +300,7 @@ define([
             var i = 0;
             for (; i < $scope.pageType.types.length; i++) {
                 $('.box.span6 .box-content')[i].style.display = '';
-                $(".box h2")[i + 3].innerHTML = '<i class="icon-edit"></i> ' + $scope.pageType.types[i];
+                $(".box h2")[i + 3].innerHTML = '<i class="icon-edit"></i> ' + $scope.pageType.names[i];
 
                 var index = stackCharts.indexOf($scope.pageType.types[i]);
                 $http.get(prefix + $scope.pageType.types[i]).success(render(i, index, flag));

@@ -2506,6 +2506,10 @@ function createPage(casper) {
     page.onFirstScreenFinished = function onFirstScreenFinished(finishedTimePast) {
         casper.emit('firstScreen.finished', finishedTimePast);
     };
+    // we add this feature in our phantomjs
+    page.onFirstPaintRequested = function onFirstPaintRequested() {
+        casper.emit('firstPaint.requested');
+    };
     page.onLoadFinished = function onLoadFinished(status) {
         /*jshint maxstatements:20*/
         if (status !== "success") {

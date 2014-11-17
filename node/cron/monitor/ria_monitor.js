@@ -4,80 +4,71 @@ var config = require(__dirname + '/../../config/config');
 var newDate = require(__dirname + '/../../common/dateFormat');
 var path = require('path');
 var fs = require('fs');
+var db = null;
+var Url = null;
+var ria_timming = null;
+var ria_others = null;
+var har_prefix = "";
 
-var db = mongoose.createConnection(config.db.mongo.pagemonitor);
-var url_schema = new mongoose.Schema({
-    name: {
-        type: String,
-        default: '',
-        required: true,
-        trim: true
-    },
-    addr: {
-        type: String,
-        unique: true,
-        required: true,
-        trim: true
-    },
-    user: {
-        type: String,
-        trim: true
-    },
-    password: {
-        type: String,
-        trim: true
-    },
-    ua: {
-        type: String,
-        trim: true
-    }
-});
-var Url = db.model('monitor_url', url_schema);
-var data_schema = new mongoose.Schema({
-    timeToFirstCss: {type: Number, required: true},
-    timeToFirstJs: {type: Number, required: true},
-    timeToFirstResFirstByte: {type: Number,required: true},
-    slowestResponse: {type: Number,required: true},
-    httpTrafficCompleted: {type: Number,required: true},
-    onDOMReadyTime: { type: Number,required: true},
-    windowOnLoadTime: {type: Number, required: true},
-    timeFrontendRate: {type: Number, required: true},
-    timeTofirstScreenFinished: {type: Number, required: true},
+var connect_database = function() {
+    db = mongoose.createConnection(config.db.mongo.pagemonitor);
+    var data_schema = new mongoose.Schema({
+        name: {type: String, default: '', required: true, trim: true},
+        addr: {type: String, unique: true, required: true, trim: true},
+        user: {type: String, trim: true},
+        password: {type: String, trim: true},
+        ua: {type: String, trim: true}
+    });
+    Url = db.model('monitor_url', data_schema);
+    data_schema = new mongoose.Schema({
+        timeToFirstCss: {type: Number, required: true},
+        timeToFirstJs: {type: Number, required: true},
+        timeToFirstResFirstByte: {type: Number,required: true},
+        slowestResponse: {type: Number,required: true},
+        httpTrafficCompleted: {type: Number,required: true},
+        onDOMReadyTime: { type: Number,required: true},
+        windowOnLoadTime: {type: Number, required: true},
+        timeFrontendRate: {type: Number, required: true},
+        timeToFirstScreenFinished: {type: Number, required: true},
+        timeToFirstPaintRequested: {type: Number, required: true},
 
-    monitor_time: {type: Date, require: true},
-    index: {type: String, required: true, trim: true}
-});
-var ria_timming = db.model('ria_timming', data_schema);
-var data_schema = new mongoose.Schema({
-    cssCount: {type: Number, required: true},
-    jsCount: {type: Number, required: true},
-    imageCount: {type: Number, required: true},
-    cssSize: {type: Number, required: true},
-    jsSize: {type: Number, required: true},
-    imageSize: {type: Number, required: true},
-    consoleMessages: {type: Number, required: true},
+        monitor_time: {type: Date, require: true},
+        index: {type: String, required: true, trim: true}
+    });
+    ria_timming = db.model('ria_timming', data_schema);
+    data_schema = new mongoose.Schema({
+        cssCount: {type: Number, required: true},
+        jsCount: {type: Number, required: true},
+        imageCount: {type: Number, required: true},
+        cssSize: {type: Number, required: true},
+        jsSize: {type: Number, required: true},
+        imageSize: {type: Number, required: true},
+        consoleMessages: {type: Number, required: true},
 
-    requests: {type: Number, required: true},
-    ajaxRequests: {type: Number, required: true},
-    notFound: {type: Number, required: true},
-    medianRequestsPerDomain: {type: Number, required: true},
-    maxRequestsPerDomain: {type: Number, required: true},
+        requests: {type: Number, required: true},
+        ajaxRequests: {type: Number, required: true},
+        notFound: {type: Number, required: true},
+        medianRequestsPerDomain: {type: Number, required: true},
+        maxRequestsPerDomain: {type: Number, required: true},
 
-    DOMqueries: {type: Number, required: true},
-    DOMqueriesById: {type: Number, required: true},
-    DOMqueriesByClassName: {type: Number, required: true},
-    DOMqueriesByTagName: {type: Number, required: true},
-    DOMqueriesByQuerySelectorAll: {type: Number, required: true},
-    DOMinserts: {type: Number, required: true},
-    DOMqueriesDuplicated: {type: Number, required: true},
-    DOMelementsCount: {type: Number, required: true},
-    DOMelementMaxDepth: {type: Number, required: true},
-    nodesWithInlineCSS: {type: Number, required: true},
+        DOMqueries: {type: Number, required: true},
+        DOMqueriesById: {type: Number, required: true},
+        DOMqueriesByClassName: {type: Number, required: true},
+        DOMqueriesByTagName: {type: Number, required: true},
+        DOMqueriesByQuerySelectorAll: {type: Number, required: true},
+        DOMinserts: {type: Number, required: true},
+        DOMqueriesDuplicated: {type: Number, required: true},
+        DOMelementsCount: {type: Number, required: true},
+        DOMelementMaxDepth: {type: Number, required: true},
+        nodesWithInlineCSS: {type: Number, required: true},
 
-    monitor_time: {type: Date, require: true},
-    index: {type: String, required: true, trim: true}
-});
-var ria_others = db.model('ria_others', data_schema);
+        monitor_time: {type: Date, require: true},
+        index: {type: String, required: true, trim: true}
+    });
+    ria_others = db.model('ria_others', data_schema);
+    return true;
+}
+    
 var url_map = [];
 
 var type = process.argv[2];
@@ -87,6 +78,7 @@ function get_monitor_data(type) {
     var moni_args = [];
     var results = [];
     var timer = false;
+    
     var get_data = function(args) {
         // get the monitor data one by one, we have some problems when parallel request
         // my english is not that good, sorry^_^
@@ -105,40 +97,47 @@ function get_monitor_data(type) {
             get_data(args);
         }, 60000);
         
-        if (arg.length > 3) {
-            monitor_process.stdout.on('data', function(data) {
-                var tmp = JSON.parse(data);
-                tmp = tmp.metrics;
-                var file = arg[3];
-                if (type === 'time') {
-                    tmp.timeFrontendRate = tmp.timeFrontend;
-                    delete tmp.timeFrontend;
-                    delete tmp.timeBackend;
+        monitor_process.stdout.on('data', function(data) {
+            var output = data.toString();
+            if (/error/.test(output)) {
+                console.log("error: ", output);
+                // if login fail, we assume the account is error,
+                // so skip the page of this user accout
+                if (/automation_login\.js$/.test(arg[0])) {
+                    var length = args.length;
+                    for (var i = 0; i < length; i++) {
+                        if (!/automation_monitor_with_cookies\.js$/.test(args[i][0])) {
+                            break;
+                        }
+                    }
+                    if (i > 0 && i < length) args.splice(0, i);
                 }
+            }
+            if (arg.length == 3) return;
+            var tmp = JSON.parse(data);
+            tmp = tmp.metrics;
+            var file = arg[arg.length - 1];
+            if (type === 'time') {
+                tmp.timeFrontendRate = tmp.timeFrontend;
+                delete tmp.timeFrontend;
+                delete tmp.timeBackend;
+            }
 
-                var pos = file.lastIndexOf("/") > file.lastIndexOf("\\") ? file.lastIndexOf("/") : file.lastIndexOf("\\");
-                tmp.index = file.substring(pos + 1);
-                url_map.push(tmp.index);
-                tmp.monitor_time = monitor_time;
-                results.push(tmp);
-            });
-
-            monitor_process.stderr.on('data', function(data) {
-                console.log("error: ", data.toString('utf8'));
-                monitor_process.kill();
-                clearTimeout(timer);
-                get_data(args);
-            });
-        }
+            var pos = file.lastIndexOf("/") > file.lastIndexOf("\\") ? file.lastIndexOf("/") : file.lastIndexOf("\\");
+            tmp.index = file.substring(pos + 1);
+            url_map.push(tmp.index);
+            tmp.monitor_time = monitor_time;
+            results.push(tmp);
+        });
             
         monitor_process.on('exit', function() {
-            monitor_process.kill();
             clearTimeout(timer);
             get_data(args);
         });
     };
 
     // your have to config your monitor address first
+    connect_database();
     Url.find().exec(function(err, urls) {
         if (err) {
             console.log('find url error');
@@ -163,11 +162,19 @@ function get_monitor_data(type) {
                     args_no_login[urls[i].addr] = urls[i].ua ? (urls[i]._id + ';;;' + urls[i].ua) : (urls[i]._id + '');
                 }
             }
+            var prefix = path.join(__dirname, '../../../automation/modules');
             for (var usr in args) {
-                moni_args.push([__dirname + '/automation_login.js', usr, args[usr].pw]);
+                moni_args.push([
+                    prefix + '/automation_login.js',
+                    usr, args[usr].pw
+                ]);
                 for (var i in args[usr]['data']) {
-                    var fileDir = '/data1/pageMonitor/har/' + monitor_time.format("yyyy/MM/dd/hh/mm/");
-                    var arg = [__dirname + '/automation_monitor_with_cookies.js', args[usr]['data'][i].addr, type, fileDir + args[usr]['data'][i]._id];
+                    var fileDir = path.join(har_prefix, monitor_time.format("yyyy/MM/dd/hh/mm/"));
+                    var arg = [
+                        prefix + '/automation_monitor_with_cookies.js',
+                        args[usr]['data'][i].addr,
+                        type, usr, fileDir + args[usr]['data'][i]._id
+                    ];
                     if (args[usr]['data'][i].ua) {
                         arg.push(args[usr]['data'][i].ua);
                     }
@@ -176,8 +183,11 @@ function get_monitor_data(type) {
             }
             for (var addr in args_no_login) {
                 var tmp = args_no_login[addr].split(';;;');
-                var fileDir = '/data1/pageMonitor/har/' + monitor_time.format("yyyy/MM/dd/hh/mm/");
-                var arg = [__dirname + '/automation_monitor_without_cookies.js', addr, type, fileDir + tmp[0]];
+                var fileDir = path.join(har_prefix, monitor_time.format("yyyy/MM/dd/hh/mm/"));
+                var arg = [
+                    prefix + '/automation_monitor_without_cookies.js',
+                    addr, type, fileDir + tmp[0]
+                ];
                 if (tmp[1]) {
                     arg.push(tmp[1]);
                 }
@@ -213,7 +223,7 @@ var store_func = function(results, type) {
 var check_har = function() {
     var cur = new newDate(new Date().setMinutes(0, 0, 0));
     var prev = new newDate(cur.getTime() - 3600000);
-    var lastDir = '/data1/pageMonitor/har/' + (prev.format("yyyy/MM/dd/hh/"));
+    var lastDir = path.join(har_prefix, prev.format("yyyy/MM/dd/hh/"));
 
     if (!fs.existsSync(lastDir)) {
         db.close();
@@ -282,8 +292,8 @@ var process_har = function(hars_arr, cur, prev) {
         var median_map = calcMedian(sData, hars_arr);
         for (var index in median_map) {
             if (!median_map[index]) continue;
-            var oldPath = '/data1/pageMonitor/har/' + new newDate(median_map[index].getTime()).format("yyyy/MM/dd/hh/mm/") + index;
-            var newPath = '/data1/pageMonitor/har/' + prev.format("yyyy/MM/dd/hh/");
+            var oldPath = path.join(har_prefix, new newDate(median_map[index].getTime()).format("yyyy/MM/dd/hh/mm/"), index);
+            var newPath = path.join(har_prefix, prev.format("yyyy/MM/dd/hh/"));
             if (fs.existsSync(oldPath)) {
                 fs.renameSync(oldPath, newPath + index);
             }
@@ -305,16 +315,50 @@ var process_har = function(hars_arr, cur, prev) {
     });
 };
 
+// get the machine IP
+var get_machine_ip = function() {
+    var cmd = "ifconfig | awk '/eth/{print \$0}' | wc -l";
+    cp.exec(cmd, function(err, stdout, stderr) {
+        if (err || Number(stdout) <= 0) {
+            console.log("error: can not get the IP!!");
+            process.exit(1);
+        }
+        cmd = "ifconfig | grep -A1 eth{$cnt} | awk '/.*inet/{print \$2}' | awk -F: '{print \$2}' | head -n 1";
+        cp.exec(cmd, function(err, stdout, stderr) {
+            if (err) {
+                console.log("error: " + stderr);
+                process.exit(1);
+            }
+            if (!stdout.trim()) {
+                var cmd = "ifconfig | grep -A1 eth | awk '/.*inet/{print \$2}' | awk -F: '{print \$2}' | head -n 1";
+                cp.exec(cmd, function(err, stdout, stderr) {
+                    if (err) {
+                        console.log("error: " + stderr);
+                        process.exit(1);
+                    }
+                    har_prefix = path.join(__dirname, '../../../har', stdout.trim());
+                    get_monitor_data(type);
+                });
+            } else {
+                har_prefix = path.join(__dirname, '../../../har', stdout.trim());
+                get_monitor_data(type);
+            }
+        });
+    });
+}
+
 /**************************** start *******************************/
 // 为了防止脚本多次执行
 // in case there is many tasks doing at the same time
 var cmd = 'ps -ef | grep ria_monitor.js | grep -v grep | wc -l';
 cp.exec(cmd, function(err, stdout, stderr) {
-    if (Number(stdout) > 2) {
-        db.close();
+    if (err || Number(stdout) > 2) {
+        console.log("error: previous script has not done!!");
+        process.exit(1);
     }
     else {
-        get_monitor_data(type);
+        get_machine_ip();
     }
 });
 /*************************** start end ****************************/
+

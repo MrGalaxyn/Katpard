@@ -1,5 +1,5 @@
 /**
- * Provides metrics for time
+ * Provides metrics for time to first image, CSS and JS file
  *
  * setMetric('timeToFirstCss')   @desc time it took to receive the last byte of the first CSS @offenders
  * setMetric('timeToFirstJs')    @desc time it took to receive the last byte of the first JS @offenders
@@ -29,7 +29,8 @@ exports.module = function(results) {
         timeToFirstResFirstByte: 0,
         onDOMReadyTime: 0,
         windowOnLoadTime: 0,
-        timeTofirstScreenFinished: 0,
+        timeToFirstScreenFinished: 0,
+        timeToFirstPaintRequested: 0,
         timeToFirstJs: 0,
         timeToFirstCss: 0
     };
@@ -53,7 +54,8 @@ exports.module = function(results) {
     results.setMetric('windowOnLoadTime');     // @desc time it took to fire window.load event
     results.setMetric('timeBackend');  // @desc time to the first byte compared to the total loading time [%]
     results.setMetric('timeFrontend'); // @desc time to window.load compared to the total loading time [%]
-    results.setMetric('timeTofirstScreenFinished'); // @desc time it took to finish render first screen
+    results.setMetric('timeToFirstScreenFinished'); // @desc time it took to finish render first screen
+    results.setMetric('timeToFirstPaintRequested'); // @desc time it took to start the first paint
 
     // register the timestamp when the request for the page was sent
     casper.on('load.started', function() {
@@ -197,8 +199,11 @@ exports.module = function(results) {
     });
 
     casper.on('firstScreen.finished', function(time) {
-        // results.setMetric('timeTofirstScreenFinished', time - loadStartedTime);
-        monitorRes.timeTofirstScreenFinished = Date.now() - time;
+        monitorRes.timeToFirstScreenFinished = Date.now() - time;
+    });
+
+    casper.on('firstPaint.requested', function() {
+        monitorRes.timeToFirstPaintRequested = Date.now();
     });
 
     casper.on('report', function() {
