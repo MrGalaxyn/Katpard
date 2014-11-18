@@ -13,16 +13,16 @@
     {
         $cmd_status = 0;
         $cmd_output = array();
-        $cmd = "ifconfig | awk '/eth/{print \$0}' | wc -l";
+        $cmd = "/sbin/ifconfig | awk '/eth/{print \$0}' | wc -l";
         $cnt = shell_exec($cmd) - 1;
         if ($cnt < 0)
             return false;
-        $cmd = "ifconfig | grep -A1 eth{$cnt} | awk '/.*inet/{print \$2}' | awk -F: '{print \$2}' | head -n 1";
+        $cmd = "/sbin/ifconfig | grep -A1 eth{$cnt} | awk '/.*inet/{print \$2}' | awk -F: '{print \$2}' | head -n 1";
         $ret = trim(shell_exec($cmd));
         if (empty($ret))
         {
             // 对于非主流配置,就随便去个IP吧
-            $cmd = "ifconfig | grep -A1 eth | awk '/.*inet/{print \$2}' | awk -F: '{print \$2}' | head -n 1";
+            $cmd = "/sbin/ifconfig | grep -A1 eth | awk '/.*inet/{print \$2}' | awk -F: '{print \$2}' | head -n 1";
             $ret = trim(shell_exec($cmd));
         }
         return $ret;
@@ -83,7 +83,7 @@
                 {
                     $login_flag = true;
                     // echo "login {$monitor_addr['user']} {$monitor_addr['password']}\n";
-                    $cmd = "/usr/local/bin/casperjs {$login_script_dir} '{$monitor_addr['user']}' '{$monitor_addr['password']}'";
+                    $cmd = "casperjs {$login_script_dir} '{$monitor_addr['user']}' '{$monitor_addr['password']}'";
                     $res = shell_exec($cmd);
                     // if login fail, try again!
                     if (strstr($res, "error"))
@@ -95,7 +95,7 @@
                     }
                 }
                 // echo "{$monitor_addr['addr']}\n";
-                $cmd = "/usr/local/bin/casperjs {$monitor_script_dir} '{$monitor_addr['addr']}' time '{$monitor_addr['user']}' {$har_dir}" . $monitor_addr['_id'];
+                $cmd = "casperjs {$monitor_script_dir} '{$monitor_addr['addr']}' time '{$monitor_addr['user']}' {$har_dir}" . $monitor_addr['_id'];
                 if (!empty($monitor_addr['ua']))
                     $cmd .= " '{$monitor_addr['ua']}'";
                 // echo $cmd ."\n";
@@ -134,7 +134,7 @@
     foreach ($no_login_addr as $monitor_addr)
     {
         // echo "{$monitor_addr['addr']}\n";
-        $cmd = "/usr/local/bin/casperjs {$no_cookie_monitor_script_dir} '{$monitor_addr['addr']}' time {$har_dir}" . $monitor_addr['_id'];
+        $cmd = "casperjs {$no_cookie_monitor_script_dir} '{$monitor_addr['addr']}' time {$har_dir}" . $monitor_addr['_id'];
         if (!empty($monitor_addr['ua']))
             $cmd .= " '{$monitor_addr['ua']}'";
         // echo $cmd ."\n";

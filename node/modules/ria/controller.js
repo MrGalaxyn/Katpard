@@ -416,7 +416,7 @@ module.exports = function (app) {
         }
         var time = parseInt(req.query.time);
         var index = req.query.index;
-        var filename = path.join(__dirname, '../../../har', new newDate(time).format('yyyy/MM/dd/hh/'), index);
+        var filename = path.join(__dirname, '../../../har', new newDate(time).format('yyyy/M/d/h/'), index);
         if (!fs.existsSync(filename)) {
             res.send(('onInputData()'));
             return;

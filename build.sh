@@ -39,8 +39,8 @@ sed -i "s;^ *casperjs.*;    casperjs: '${root}/automation/bin/casperjs',;g" node
 sed -i "s;^ *node.*;    node: '${NODEDIR}';g" node/config/all.js
 sed -i "s;^ *'default_exec'.*;        'default_exec' : '${root}/automation/bin/phantomjs';" automation/bin/casperjs
 sed -i "s;^ *pagemonitor.*;            pagemonitor: '${MONGO}',;g" node/config/env/production.js
+sed -i "s;casperjs;${root}/automation/bin/casperjs;g" php/cron/monitor.php
 chmod +x automation/bin/casperjs
-chmod +x automation/bin/phantomjs
 chmod +x restart.sh
 chmod +x node/cron/check_daemon/cron.sh
 chmod +x node/cron/disk_clean/clean.sh
